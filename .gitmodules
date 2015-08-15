@@ -1,0 +1,3 @@
+[submodule "uart-message"]
+	path = uart-message
+	url = git@github.com:counterwound/uart-message.git
