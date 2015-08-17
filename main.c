@@ -1,13 +1,76 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "inc/hw_gpio.h"
+#include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "driverlib/gpio.h"
+#include "driverlib/interrupt.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
+
+#define UART_BAUD 115200
+
+//*****************************************************************************
+// The interrupt handler for the UART2 interrupt
+//*****************************************************************************
+void DrawScreen(void)
+{
+	// Clear and reset home screen
+	UARTprintf("\033[2J\033[;H");
+	UARTprintf("Counterwound Labs, Inc.");
+	UARTprintf("\r\nSerial test.");
+
+	UARTprintf("\033[4;0f");
+	UARTprintf("UART2 Status:");
+
+	UARTprintf("\033[3;0f");
+	UARTprintf("-");
+
+}
+
+//*****************************************************************************
+// The interrupt handler for the UART2 interrupt
+//*****************************************************************************
+void UART2IntHandler(void)
+{
+    uint32_t ui32Status;
+
+    // Get the interrrupt status.
+    ui32Status = UARTIntStatus(UART2_BASE, true);
+
+    // Clear the asserted interrupts.
+    UARTIntClear(UART2_BASE, ui32Status);
+
+	UARTprintf("\033[3;40f");
+	UARTprintf("%08x",ui32Status);
+
+
+    // Interrupt for when data is Rx
+    // Tied to UARTFIFOEnable()
+    if(ui32Status == UART_INT_RX)
+	{
+   		// Loop while there are characters in the receive FIFO.
+		while(UARTCharsAvail(UART2_BASE));
+		{
+			UARTCharGetNonBlocking(UART2_BASE);
+		}
+	}
+
+	// Interrupt for Tx is idle
+	if(ui32Status == UART_INT_TX)
+	{
+		// Code here
+	}
+
+	// Interrupt for when timeout occurs on UART
+	if(ui32Status == UART_INT_RT)
+	{
+		// Code here
+	}
+}
 
 //*****************************************************************************
 // Main code starts here
@@ -49,27 +112,26 @@ int main(void)
 	UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);
 
 	// Initialize  UART0 using uartstdio
-    UARTStdioConfig(0, 115200, 16000000);
+    UARTStdioConfig(0, UART_BAUD, 16000000);
 
     // Initialize UART2
-	UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), 115200,
+	UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), UART_BAUD,
 			(UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
-//    UARTFIFOEnable(UART2_BASE);
-//    UARTFIFOLevelSet(UART2_BASE, UART_FIFO_TX6_8, UART_FIFO_RX6_8);
+    UARTFIFOEnable(UART2_BASE);
+    UARTFIFOLevelSet(UART2_BASE, UART_FIFO_TX1_8, UART_FIFO_RX7_8);
 
-	// Clear and reset home screen
-	UARTprintf("\033[2J\033[;H");
-	UARTprintf("Counterwound Labs, Inc.");
-	UARTprintf("\r\nSerial test.");
-	UARTprintf("\r\nHeartbeat Counter = 0x");
 
-	uint32_t ui32Counter = 0;
 
-	while(1)
+	// Enable processor interrupts.
+	IntMasterEnable();
+
+	IntEnable(INT_UART2);
+	UARTIntEnable(UART2_BASE, UART_INT_RX | UART_INT_TX | UART_INT_RT);
+	UARTTxIntModeSet(UART2_BASE, UART_TXINT_MODE_EOT);	DrawScreen();
+
+	while (1)
 	{
-		UARTprintf("\033[3;23f");
-		UARTprintf("%08x",ui32Counter);
 		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
-		ui32Counter++;
+
 	}
 }
