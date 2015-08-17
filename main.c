@@ -10,8 +10,14 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
+#include "utils/random.h"
 
 #define UART_BAUD 115200
+
+//*****************************************************************************
+// Flags
+//*****************************************************************************
+volatile bool g_bUART2RxFlag = 0;		// UART2 Rx Idle Flag
 
 //*****************************************************************************
 // The interrupt handler for the UART2 interrupt
@@ -19,16 +25,23 @@
 void DrawScreen(void)
 {
 	// Clear and reset home screen
-	UARTprintf("\033[2J\033[;H");
+	UARTprintf("\033[2J"); // Clear everything
+
+	UARTprintf("\033[1;1f");
 	UARTprintf("Counterwound Labs, Inc.");
-	UARTprintf("\r\nSerial test.");
+	UARTprintf("\033[2;1f");
+	UARTprintf("--------------------");
+}
 
-	UARTprintf("\033[4;0f");
-	UARTprintf("UART2 Status:");
+//*****************************************************************************
+// Generate data for a random message
+//*****************************************************************************
+uint64_t RandomMessage(void)
+{
+	// ¿FIXME? Not so random but good enough for now
+	uint64_t ui64Message = 0x0807060504030201;
 
-	UARTprintf("\033[3;0f");
-	UARTprintf("-");
-
+	return ui64Message;
 }
 
 //*****************************************************************************
@@ -44,10 +57,6 @@ void UART2IntHandler(void)
     // Clear the asserted interrupts.
     UARTIntClear(UART2_BASE, ui32Status);
 
-	UARTprintf("\033[3;40f");
-	UARTprintf("%08x",ui32Status);
-
-
     // Interrupt for when data is Rx
     // Tied to UARTFIFOEnable()
     if(ui32Status == UART_INT_RX)
@@ -57,18 +66,6 @@ void UART2IntHandler(void)
 		{
 			UARTCharGetNonBlocking(UART2_BASE);
 		}
-	}
-
-	// Interrupt for Tx is idle
-	if(ui32Status == UART_INT_TX)
-	{
-		// Code here
-	}
-
-	// Interrupt for when timeout occurs on UART
-	if(ui32Status == UART_INT_RT)
-	{
-		// Code here
 	}
 }
 
@@ -121,17 +118,29 @@ int main(void)
     UARTFIFOLevelSet(UART2_BASE, UART_FIFO_TX1_8, UART_FIFO_RX7_8);
 
 
-
 	// Enable processor interrupts.
 	IntMasterEnable();
 
 	IntEnable(INT_UART2);
-	UARTIntEnable(UART2_BASE, UART_INT_RX | UART_INT_TX | UART_INT_RT);
-	UARTTxIntModeSet(UART2_BASE, UART_TXINT_MODE_EOT);	DrawScreen();
+	UARTIntEnable(UART2_BASE, UART_INT_RX);
+//	UARTTxIntModeSet(UART2_BASE, UART_TXINT_MODE_EOT);
+
+	DrawScreen();
 
 	while (1)
 	{
-		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
+		if ( g_bUART2RxFlag )
+		{
+			g_bUART2RxFlag = 0;
 
+			// Code here
+		}
+
+		if ( !UARTBusy(UART2_BASE) )
+		{
+			UARTprintf("\r\n%08x",RandomMessage());
+		}
+
+		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
 	}
 }
