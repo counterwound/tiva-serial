@@ -11,6 +11,7 @@
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
 #include "utils/random.h"
+#include "uart-message/umsg.h"
 
 #define UART_BAUD 115200
 
