@@ -13,12 +13,27 @@
 #include "utils/random.h"
 #include "uart-message/umsg.h"
 
-#define UART_BAUD 115200
+#define SCREEN_BAUD 	115200
+#define UART_BAUD 		115200
 
 //*****************************************************************************
 // Flags
 //*****************************************************************************
 volatile bool g_bUART2RxFlag = 0;		// UART2 Rx Idle Flag
+
+//*****************************************************************************
+// UART message objects that will hold the separate UART messages
+//*****************************************************************************
+
+tUARTMsgObject g_sUARTMsgObject1;
+tUARTMsgObject g_sUARTMsgObject2;
+
+//*****************************************************************************
+// Message buffers that hold the contents of the messages
+//*****************************************************************************
+
+uint8_t g_pui8Msg1[8] = {  8,  7,  6,  5,  4,  3,  2,  1 };
+uint8_t g_pui8Msg2[8] = { 16, 15, 14, 13, 12, 11, 10,  9 };
 
 //*****************************************************************************
 // The interrupt handler for the UART2 interrupt
@@ -37,12 +52,12 @@ void DrawScreen(void)
 //*****************************************************************************
 // Generate data for a random message
 //*****************************************************************************
-uint64_t RandomMessage(void)
+uint8_t RandomByte(void)
 {
 	// ¿FIXME? Not so random but good enough for now
-	uint64_t ui64Message = 0x0807060504030201;
+	uint8_t ui8Message = 0x07;
 
-	return ui64Message;
+	return ui8Message;
 }
 
 //*****************************************************************************
@@ -112,7 +127,7 @@ int main(void)
 	UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);
 
 	// Initialize  UART0 using uartstdio
-    UARTStdioConfig(0, UART_BAUD, 16000000);
+    UARTStdioConfig(0, SCREEN_BAUD, 16000000);
 
     // Initialize UART2
 	UARTConfigSetExpClk(UART2_BASE, SysCtlClockGet(), UART_BAUD,
@@ -140,11 +155,17 @@ int main(void)
 
 		if ( !UARTBusy(UART2_BASE) )
 		{
-			// Send random message ID (2 bytes) and message (8 bytes)
+			// Send message
+			g_sUARTMsgObject1.ui16MsgID = 0x0201;
+			g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8Msg1);
+			g_sUARTMsgObject1.pui8MsgData = g_pui8Msg1;
+
+			UARTMessageSet(UART2_BASE, &g_sUARTMsgObject1);
 		}
 
-		// Compare how many message were sent verus how man were received
+		// Some statistical analyis of message traffic
 
+		// Slow down the tests
 		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
 	}
 }
