@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -12,7 +13,6 @@
 #include "utils/uartstdio.h"
 #include "utils/random.h"
 #include "uart-message/umsg.h"
-#include "utils/random.h"
 
 #define SCREEN_BAUD 	115200
 #define UART_BAUD 		115200
@@ -27,14 +27,12 @@ volatile bool g_bUART2RxFlag = 0;		// UART2 Rx Idle Flag
 //*****************************************************************************
 
 tUARTMsgObject g_sUARTMsgObject1;
-tUARTMsgObject g_sUARTMsgObject2;
 
 //*****************************************************************************
 // Message buffers that hold the contents of the messages
 //*****************************************************************************
 
 uint8_t g_pui8Msg1[8] = {  8,  7,  6,  5,  4,  3,  2,  1 };
-uint8_t g_pui8Msg2[8] = { 16, 15, 14, 13, 12, 11, 10,  9 };
 
 //*****************************************************************************
 // The interrupt handler for the UART2 interrupt
