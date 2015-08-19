@@ -62,11 +62,13 @@ void UART2IntHandler(void)
     // Tied to UARTFIFOEnable()
     if(ui32Status == UART_INT_RX)
 	{
-   		// Loop while there are characters in the receive FIFO.
-		while(UARTCharsAvail(UART2_BASE));
+	// Loop while there are characters in the receive FIFO.
+    // Loop while there are characters in the receive FIFO.
+		while(UARTCharsAvail(UART2_BASE))
 		{
 			UARTCharGetNonBlocking(UART2_BASE);
 		}
+		UARTprintf("\r\nRx Interrupt");
 	}
 }
 
@@ -124,7 +126,6 @@ int main(void)
 
 	IntEnable(INT_UART2);
 	UARTIntEnable(UART2_BASE, UART_INT_RX);
-//	UARTTxIntModeSet(UART2_BASE, UART_TXINT_MODE_EOT);
 
 	DrawScreen();
 
@@ -134,13 +135,15 @@ int main(void)
 		{
 			g_bUART2RxFlag = 0;
 
-			// Code here
+			// Receive a message
 		}
 
 		if ( !UARTBusy(UART2_BASE) )
 		{
-			UARTprintf("\r\n%08x",RandomMessage());
+			// Send random message ID (2 bytes) and message (8 bytes)
 		}
+
+		// Compare how many message were sent verus how man were received
 
 		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
 	}
