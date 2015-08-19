@@ -12,6 +12,7 @@
 #include "utils/uartstdio.h"
 #include "utils/random.h"
 #include "uart-message/umsg.h"
+#include "utils/random.h"
 
 #define SCREEN_BAUD 	115200
 #define UART_BAUD 		115200
@@ -52,12 +53,12 @@ void DrawScreen(void)
 //*****************************************************************************
 // Generate data for a random message
 //*****************************************************************************
-uint8_t RandomByte(void)
+uint8_t RandomMessage(void)
 {
-	// ¿FIXME? Not so random but good enough for now
-	uint8_t ui8Message = 0x07;
+	//create 8 random integers
+	uint8_t ui8Serial = rand();
 
-	return ui8Message;
+	return ui8Serial;
 }
 
 //*****************************************************************************
