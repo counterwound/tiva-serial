@@ -156,10 +156,23 @@ int main(void)
 
 		if ( !UARTBusy(UART2_BASE) )
 		{
+
+			uint16_t id1 = rand();
+
+			uint8_t Msg10 = rand();
+			uint8_t Msg11 = rand();
+			uint8_t Msg12 = rand();
+			uint8_t Msg13 = rand();
+			uint8_t Msg14 = rand();
+			uint8_t Msg15 = rand();
+			uint8_t Msg16 = rand();
+			uint8_t Msg17 = rand();
+
+			uint8_t g_pui8Msg2[8] = { Msg17, Msg16, Msg15, Msg14, Msg13, Msg12, Msg11, Msg10};
 			// Send message
-			g_sUARTMsgObject1.ui16MsgID = 0x0201;
-			g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8Msg1);
-			g_sUARTMsgObject1.pui8MsgData = g_pui8Msg1;
+			g_sUARTMsgObject1.ui16MsgID = id1;
+			g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8Msg2);
+			g_sUARTMsgObject1.pui8MsgData = g_pui8Msg2;
 
 			UARTMessageSet(UART2_BASE, &g_sUARTMsgObject1);
 		}
