@@ -65,8 +65,7 @@ void UART2IntHandler(void)
     // Tied to UARTFIFOEnable()
     if(ui32Status == UART_INT_RX)
 	{
-	// Loop while there are characters in the receive FIFO.
-    // Loop while there are characters in the receive FIFO.
+    	// Loop while there are characters in the receive FIFO.
 		while(UARTCharsAvail(UART2_BASE))
 		{
 			UARTCharGetNonBlocking(UART2_BASE);
@@ -160,9 +159,6 @@ int main(void)
 
 			UARTMessageSet(UART2_BASE, &g_sUARTMsgObject1);
 		}
-
-		// Some statistical analyis of message traffic
-		UARTCharPutNonBlocking(UART2_BASE, 'x');
 
 		// Slow down the tests
 		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
