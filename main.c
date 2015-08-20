@@ -45,18 +45,7 @@ void DrawScreen(void)
 	UARTprintf("\033[1;1f");
 	UARTprintf("Counterwound Labs, Inc.");
 	UARTprintf("\033[2;1f");
-	UARTprintf("--------------------");
-}
-
-//*****************************************************************************
-// Generate data for a random message
-//*****************************************************************************
-uint8_t RandomMessage(void)
-{
-	//create 8 random integers
-	uint8_t ui8Serial = rand();
-
-	return ui8Serial;
+	UARTprintf("--------------------\r\n");
 }
 
 //*****************************************************************************
@@ -82,7 +71,7 @@ void UART2IntHandler(void)
 		{
 			UARTCharGetNonBlocking(UART2_BASE);
 		}
-		UARTprintf("\r\nRx Interrupt");
+		UARTprintf("Rx Interrupt\r\n");
 	}
 }
 
@@ -134,8 +123,7 @@ int main(void)
     UARTFIFOEnable(UART2_BASE);
     UARTFIFOLevelSet(UART2_BASE, UART_FIFO_TX1_8, UART_FIFO_RX7_8);
 
-
-	// Enable processor interrupts.
+	// Enable processor interrupts
 	IntMasterEnable();
 
 	IntEnable(INT_UART2);
@@ -154,9 +142,7 @@ int main(void)
 
 		if ( !UARTBusy(UART2_BASE) )
 		{
-
 			uint16_t id1 = rand();
-
 			uint8_t Msg10 = rand();
 			uint8_t Msg11 = rand();
 			uint8_t Msg12 = rand();
@@ -166,7 +152,7 @@ int main(void)
 			uint8_t Msg16 = rand();
 			uint8_t Msg17 = rand();
 
-			uint8_t g_pui8Msg2[8] = { Msg17, Msg16, Msg15, Msg14, Msg13, Msg12, Msg11, Msg10};
+			uint8_t g_pui8Msg2[8] = { Msg17, Msg16, Msg15, Msg14, Msg13, Msg12, Msg11, Msg10 };
 			// Send message
 			g_sUARTMsgObject1.ui16MsgID = id1;
 			g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8Msg2);
@@ -176,6 +162,7 @@ int main(void)
 		}
 
 		// Some statistical analyis of message traffic
+		UARTCharPutNonBlocking(UART2_BASE, 'x');
 
 		// Slow down the tests
 		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
