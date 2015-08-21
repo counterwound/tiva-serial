@@ -65,12 +65,7 @@ void UART2IntHandler(void)
     // Tied to UARTFIFOEnable()
     if(ui32Status == UART_INT_RX)
 	{
-    	// Loop while there are characters in the receive FIFO.
-		while(UARTCharsAvail(UART2_BASE))
-		{
-			UARTCharGetNonBlocking(UART2_BASE);
-		}
-		UARTprintf("Rx Interrupt\r\n");
+    	g_bUART2RxFlag = 1;
 	}
 }
 
@@ -136,22 +131,18 @@ int main(void)
 		{
 			g_bUART2RxFlag = 0;
 
+			uint8_t bleh0 = 7;
+
 			// Receive a message
+			UARTMessageGet(UART2_BASE, &bleh0 );
 		}
 
 		if ( !UARTBusy(UART2_BASE) )
 		{
 			uint16_t id1 = rand();
-			uint8_t Msg10 = rand();
-			uint8_t Msg11 = rand();
-			uint8_t Msg12 = rand();
-			uint8_t Msg13 = rand();
-			uint8_t Msg14 = rand();
-			uint8_t Msg15 = rand();
-			uint8_t Msg16 = rand();
-			uint8_t Msg17 = rand();
 
-			uint8_t g_pui8Msg2[8] = { Msg17, Msg16, Msg15, Msg14, Msg13, Msg12, Msg11, Msg10 };
+			uint8_t g_pui8Msg2[8] = { rand(), rand(), rand(), rand(), rand(),
+					rand(), rand(), rand() };
 			// Send message
 			g_sUARTMsgObject1.ui16MsgID = id1;
 			g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8Msg2);
