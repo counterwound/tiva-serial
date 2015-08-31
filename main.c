@@ -1,3 +1,8 @@
+/*
+ * Assumes pins PD6 and PD7 are jumpered.
+ *
+ */
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -127,7 +132,7 @@ int main(void)
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObjectRx.ui16MsgID = 0;
-	g_sUARTMsgObjectRx.ui32MsgLen = 12;
+	g_sUARTMsgObjectRx.ui32MsgLen = sizeof(g_pui8MsgTx);
 
 	DrawScreen();
 
@@ -147,6 +152,8 @@ int main(void)
 			// Receive data
 			unsigned int uIdx;
 
+			UARTprintf("Rx ID: %04x, Msg: ", g_sUARTMsgObjectRx.ui16MsgID);
+
 			for(uIdx = 0; uIdx < g_sUARTMsgObjectRx.ui32MsgLen; uIdx++)
 			{
 				UARTprintf( "%02x ", g_pui8MsgRx[uIdx] );
@@ -154,16 +161,16 @@ int main(void)
 			UARTprintf("\r\n");
 		}
 
-		if ( !UARTBusy(UART2_BASE) )
-		{
+//		if ( !UARTBusy(UART2_BASE) )
+//		{
 			g_pui8MsgTx[0] = rand();
-			g_pui8MsgTx[1] = 0x01;
+			g_pui8MsgTx[1] = rand();
 			g_pui8MsgTx[2] = rand();
-			g_pui8MsgTx[3] = 0x02;
+			g_pui8MsgTx[3] = rand();
 			g_pui8MsgTx[4] = rand();
-			g_pui8MsgTx[5] = 0x03;
+			g_pui8MsgTx[5] = rand();
 			g_pui8MsgTx[6] = rand();
-			g_pui8MsgTx[7] = 0x04;
+			g_pui8MsgTx[7] = rand();
 
 			// Send message
 			g_sUARTMsgObjectTx.ui16MsgID = rand();
@@ -171,7 +178,17 @@ int main(void)
 			g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
 			UARTMessageSet(UART2_BASE, &g_sUARTMsgObjectTx);
-		}
+
+			// Transmitted data
+			unsigned int uIdx;
+
+			UARTprintf("Tx ID: %04x, Msg: ", g_sUARTMsgObjectTx.ui16MsgID);
+			for(uIdx = 0; uIdx < g_sUARTMsgObjectTx.ui32MsgLen; uIdx++)
+			{
+				UARTprintf( "%02x ", g_pui8MsgTx[uIdx] );
+			}
+			UARTprintf("\r\n");
+//		}
 
 		// Slow down the tests
 		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
