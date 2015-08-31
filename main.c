@@ -26,13 +26,15 @@ volatile bool g_bUART2RxFlag = 0;		// UART2 Rx Idle Flag
 // UART message objects that will hold the separate UART messages
 //*****************************************************************************
 
-tUARTMsgObject g_sUARTMsgObject1;
+tUARTMsgObject g_sUARTMsgObjectTx;
+tUARTMsgObject g_sUARTMsgObjectRx;
 
 //*****************************************************************************
 // Message buffers that hold the contents of the messages
 //*****************************************************************************
 
-uint8_t g_pui8Msg1[8] = {  8,  7,  6,  5,  4,  3,  2,  1 };
+uint8_t g_pui8MsgTx[8];
+uint8_t g_pui8MsgRx[8];
 
 //*****************************************************************************
 // The interrupt handler for the UART2 interrupt
@@ -123,6 +125,10 @@ int main(void)
 	IntEnable(INT_UART2);
 	UARTIntEnable(UART2_BASE, UART_INT_RX);
 
+    // Initialize a message object to be used for receiving UART messages
+	g_sUARTMsgObjectRx.ui16MsgID = 0;
+	g_sUARTMsgObjectRx.ui32MsgLen = 12;
+
 	DrawScreen();
 
 	while (1)
@@ -131,24 +137,40 @@ int main(void)
 		{
 			g_bUART2RxFlag = 0;
 
-			uint8_t bleh0 = 7;
+		    // A buffer for storing the received data must be provided,
+		    // so set the buffer pointer within the message object.
+		    g_sUARTMsgObjectRx.pui8MsgData = g_pui8MsgRx;
 
-			// Receive a message
-			UARTMessageGet(UART2_BASE, &bleh0 );
+		    // Receive a message
+			UARTMessageGet(UART2_BASE, &g_sUARTMsgObjectRx);
+
+			// Receive data
+			unsigned int uIdx;
+
+			for(uIdx = 0; uIdx < g_sUARTMsgObjectRx.ui32MsgLen; uIdx++)
+			{
+				UARTprintf( "%02x ", g_pui8MsgRx[uIdx] );
+			}
+			UARTprintf("\r\n");
 		}
 
 		if ( !UARTBusy(UART2_BASE) )
 		{
-			uint16_t id1 = rand();
+			g_pui8MsgTx[0] = rand();
+			g_pui8MsgTx[1] = 0x01;
+			g_pui8MsgTx[2] = rand();
+			g_pui8MsgTx[3] = 0x02;
+			g_pui8MsgTx[4] = rand();
+			g_pui8MsgTx[5] = 0x03;
+			g_pui8MsgTx[6] = rand();
+			g_pui8MsgTx[7] = 0x04;
 
-			uint8_t g_pui8Msg2[8] = { rand(), rand(), rand(), rand(), rand(),
-					rand(), rand(), rand() };
 			// Send message
-			g_sUARTMsgObject1.ui16MsgID = id1;
-			g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8Msg2);
-			g_sUARTMsgObject1.pui8MsgData = g_pui8Msg2;
+			g_sUARTMsgObjectTx.ui16MsgID = rand();
+			g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
+			g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
-			UARTMessageSet(UART2_BASE, &g_sUARTMsgObject1);
+			UARTMessageSet(UART2_BASE, &g_sUARTMsgObjectTx);
 		}
 
 		// Slow down the tests
