@@ -74,6 +74,13 @@ void UART2IntHandler(void)
 	{
     	g_bUART2RxFlag = 1;
 	}
+
+    // A buffer for storing the received data must be provided,
+    // so set the buffer pointer within the message object.
+    g_sUARTMsgObjectRx.pui8MsgData = g_pui8MsgRx;
+
+    // Receive a message
+	UARTMessageGet(UART2_BASE, &g_sUARTMsgObjectRx);
 }
 
 //*****************************************************************************
@@ -142,13 +149,6 @@ int main(void)
 		{
 			g_bUART2RxFlag = 0;
 
-		    // A buffer for storing the received data must be provided,
-		    // so set the buffer pointer within the message object.
-		    g_sUARTMsgObjectRx.pui8MsgData = g_pui8MsgRx;
-
-		    // Receive a message
-			UARTMessageGet(UART2_BASE, &g_sUARTMsgObjectRx);
-
 			// Receive data
 			unsigned int uIdx;
 
@@ -161,34 +161,31 @@ int main(void)
 			UARTprintf("\r\n");
 		}
 
-//		if ( !UARTBusy(UART2_BASE) )
-//		{
-			g_pui8MsgTx[0] = rand();
-			g_pui8MsgTx[1] = rand();
-			g_pui8MsgTx[2] = rand();
-			g_pui8MsgTx[3] = rand();
-			g_pui8MsgTx[4] = rand();
-			g_pui8MsgTx[5] = rand();
-			g_pui8MsgTx[6] = rand();
-			g_pui8MsgTx[7] = rand();
+		g_pui8MsgTx[0] = rand();
+		g_pui8MsgTx[1] = rand();
+		g_pui8MsgTx[2] = rand();
+		g_pui8MsgTx[3] = rand();
+		g_pui8MsgTx[4] = rand();
+		g_pui8MsgTx[5] = rand();
+		g_pui8MsgTx[6] = rand();
+		g_pui8MsgTx[7] = rand();
 
-			// Send message
-			g_sUARTMsgObjectTx.ui16MsgID = rand();
-			g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
-			g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
+		// Send message
+		g_sUARTMsgObjectTx.ui16MsgID = rand();
+		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
-			UARTMessageSet(UART2_BASE, &g_sUARTMsgObjectTx);
+		UARTMessageSet(UART2_BASE, &g_sUARTMsgObjectTx);
 
-			// Transmitted data
-			unsigned int uIdx;
+		// Transmitted data
+		unsigned int uIdx;
 
-			UARTprintf("Tx ID: %04x, Msg: ", g_sUARTMsgObjectTx.ui16MsgID);
-			for(uIdx = 0; uIdx < g_sUARTMsgObjectTx.ui32MsgLen; uIdx++)
-			{
-				UARTprintf( "%02x ", g_pui8MsgTx[uIdx] );
-			}
-			UARTprintf("\r\n");
-//		}
+		UARTprintf("Tx ID: %04x, Msg: ", g_sUARTMsgObjectTx.ui16MsgID);
+		for(uIdx = 0; uIdx < g_sUARTMsgObjectTx.ui32MsgLen; uIdx++)
+		{
+			UARTprintf( "%02x ", g_pui8MsgTx[uIdx] );
+		}
+		UARTprintf("\r\n");
 
 		// Slow down the tests
 		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
