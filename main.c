@@ -36,30 +36,22 @@ volatile bool g_bUART7RxFlag = 0;		// UART7 Rx Flag
 // UART message objects that will hold the separate UART messages
 //*****************************************************************************
 
-tUARTMsgObject g_sUARTMsgObject2Tx;
+tUARTMsgObject g_sUARTMsgObject1;
 tUARTMsgObject g_sUARTMsgObject2Rx;
-tUARTMsgObject g_sUARTMsgObject3Tx;
 tUARTMsgObject g_sUARTMsgObject3Rx;
-tUARTMsgObject g_sUARTMsgObject4Tx;
 tUARTMsgObject g_sUARTMsgObject4Rx;
-tUARTMsgObject g_sUARTMsgObject5Tx;
 tUARTMsgObject g_sUARTMsgObject5Rx;
-tUARTMsgObject g_sUARTMsgObject7Tx;
 tUARTMsgObject g_sUARTMsgObject7Rx;
 
 //*****************************************************************************
 // Message buffers that hold the contents of the messages
 //*****************************************************************************
 
-uint8_t g_pui8Msg2Tx[8];
+uint8_t g_pui8MsgTx[8];
 uint8_t g_pui8Msg2Rx[8];
-uint8_t g_pui8Msg3Tx[8];
 uint8_t g_pui8Msg3Rx[8];
-uint8_t g_pui8Msg4Tx[8];
 uint8_t g_pui8Msg4Rx[8];
-uint8_t g_pui8Msg5Tx[8];
 uint8_t g_pui8Msg5Rx[8];
-uint8_t g_pui8Msg7Tx[8];
 uint8_t g_pui8Msg7Rx[8];
 
 //*****************************************************************************
@@ -340,23 +332,23 @@ int main(void)
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObject2Rx.ui16MsgID = 0;
-	g_sUARTMsgObject2Rx.ui32MsgLen = sizeof(g_pui8Msg2Tx);
+	g_sUARTMsgObject2Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObject3Rx.ui16MsgID = 0;
-	g_sUARTMsgObject3Rx.ui32MsgLen = sizeof(g_pui8Msg3Tx);
+	g_sUARTMsgObject3Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObject4Rx.ui16MsgID = 0;
-	g_sUARTMsgObject4Rx.ui32MsgLen = sizeof(g_pui8Msg4Tx);
+	g_sUARTMsgObject4Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObject5Rx.ui16MsgID = 0;
-	g_sUARTMsgObject5Rx.ui32MsgLen = sizeof(g_pui8Msg5Tx);
+	g_sUARTMsgObject5Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObject7Rx.ui16MsgID = 0;
-	g_sUARTMsgObject7Rx.ui32MsgLen = sizeof(g_pui8Msg7Tx);
+	g_sUARTMsgObject7Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
 
 	DrawScreen();
 
@@ -378,94 +370,94 @@ int main(void)
 		//*********************************************************************
 
 		// Send UART 2 message
-		g_pui8Msg2Tx[0] = ui8Byte0;
-		g_pui8Msg2Tx[1] = ui8Byte1;
-		g_pui8Msg2Tx[2] = ui8Byte2;
-		g_pui8Msg2Tx[3] = ui8Byte3;
-		g_pui8Msg2Tx[4] = ui8Byte4;
-		g_pui8Msg2Tx[5] = ui8Byte5;
-		g_pui8Msg2Tx[6] = ui8Byte6;
-		g_pui8Msg2Tx[7] = ui8Byte7;
+		g_pui8MsgTx[0] = ui8Byte0;
+		g_pui8MsgTx[1] = ui8Byte1;
+		g_pui8MsgTx[2] = ui8Byte2;
+		g_pui8MsgTx[3] = ui8Byte3;
+		g_pui8MsgTx[4] = ui8Byte4;
+		g_pui8MsgTx[5] = ui8Byte5;
+		g_pui8MsgTx[6] = ui8Byte6;
+		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject2Tx.ui16MsgID = ui16ID;
-		g_sUARTMsgObject2Tx.ui32MsgLen = sizeof(g_pui8Msg2Tx);
-		g_sUARTMsgObject2Tx.pui8MsgData = g_pui8Msg2Tx;
+		g_sUARTMsgObject1.ui16MsgID = ui16ID;
+		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART2_BASE, &g_sUARTMsgObject2Tx);
+		UARTMessageSet(UART2_BASE, &g_sUARTMsgObject1);
 
-		PrintMessage(&g_sUARTMsgObject2Tx, g_pui8Msg2Tx, 4, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 4, 10);
 
 		// Send UART 3 message
-		g_pui8Msg3Tx[0] = ui8Byte0;
-		g_pui8Msg3Tx[1] = ui8Byte1;
-		g_pui8Msg3Tx[2] = ui8Byte2;
-		g_pui8Msg3Tx[3] = ui8Byte3;
-		g_pui8Msg3Tx[4] = ui8Byte4;
-		g_pui8Msg3Tx[5] = ui8Byte5;
-		g_pui8Msg3Tx[6] = ui8Byte6;
-		g_pui8Msg3Tx[7] = ui8Byte7;
+		g_pui8MsgTx[0] = ui8Byte0;
+		g_pui8MsgTx[1] = ui8Byte1;
+		g_pui8MsgTx[2] = ui8Byte2;
+		g_pui8MsgTx[3] = ui8Byte3;
+		g_pui8MsgTx[4] = ui8Byte4;
+		g_pui8MsgTx[5] = ui8Byte5;
+		g_pui8MsgTx[6] = ui8Byte6;
+		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject3Tx.ui16MsgID = ui16ID;
-		g_sUARTMsgObject3Tx.ui32MsgLen = sizeof(g_pui8Msg3Tx);
-		g_sUARTMsgObject3Tx.pui8MsgData = g_pui8Msg3Tx;
+		g_sUARTMsgObject1.ui16MsgID = ui16ID;
+		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART3_BASE, &g_sUARTMsgObject3Tx);
+		UARTMessageSet(UART3_BASE, &g_sUARTMsgObject1);
 
-		PrintMessage(&g_sUARTMsgObject3Tx, g_pui8Msg3Tx, 6, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 6, 10);
 
 		// Send UART 4 message
-		g_pui8Msg4Tx[0] = ui8Byte0;
-		g_pui8Msg4Tx[1] = ui8Byte1;
-		g_pui8Msg4Tx[2] = ui8Byte2;
-		g_pui8Msg4Tx[3] = ui8Byte3;
-		g_pui8Msg4Tx[4] = ui8Byte4;
-		g_pui8Msg4Tx[5] = ui8Byte5;
-		g_pui8Msg4Tx[6] = ui8Byte6;
-		g_pui8Msg4Tx[7] = ui8Byte7;
+		g_pui8MsgTx[0] = ui8Byte0;
+		g_pui8MsgTx[1] = ui8Byte1;
+		g_pui8MsgTx[2] = ui8Byte2;
+		g_pui8MsgTx[3] = ui8Byte3;
+		g_pui8MsgTx[4] = ui8Byte4;
+		g_pui8MsgTx[5] = ui8Byte5;
+		g_pui8MsgTx[6] = ui8Byte6;
+		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject4Tx.ui16MsgID = ui16ID;
-		g_sUARTMsgObject4Tx.ui32MsgLen = sizeof(g_pui8Msg4Tx);
-		g_sUARTMsgObject4Tx.pui8MsgData = g_pui8Msg4Tx;
+		g_sUARTMsgObject1.ui16MsgID = ui16ID;
+		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART4_BASE, &g_sUARTMsgObject4Tx);
+		UARTMessageSet(UART4_BASE, &g_sUARTMsgObject1);
 
-		PrintMessage(&g_sUARTMsgObject4Tx, g_pui8Msg4Tx, 8, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 8, 10);
 
 		// Send UART 5 message
-		g_pui8Msg5Tx[0] = ui8Byte0;
-		g_pui8Msg5Tx[1] = ui8Byte1;
-		g_pui8Msg5Tx[2] = ui8Byte2;
-		g_pui8Msg5Tx[3] = ui8Byte3;
-		g_pui8Msg5Tx[4] = ui8Byte4;
-		g_pui8Msg5Tx[5] = ui8Byte5;
-		g_pui8Msg5Tx[6] = ui8Byte6;
-		g_pui8Msg5Tx[7] = ui8Byte7;
+		g_pui8MsgTx[0] = ui8Byte0;
+		g_pui8MsgTx[1] = ui8Byte1;
+		g_pui8MsgTx[2] = ui8Byte2;
+		g_pui8MsgTx[3] = ui8Byte3;
+		g_pui8MsgTx[4] = ui8Byte4;
+		g_pui8MsgTx[5] = ui8Byte5;
+		g_pui8MsgTx[6] = ui8Byte6;
+		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject5Tx.ui16MsgID = ui16ID;
-		g_sUARTMsgObject5Tx.ui32MsgLen = sizeof(g_pui8Msg5Tx);
-		g_sUARTMsgObject5Tx.pui8MsgData = g_pui8Msg5Tx;
+		g_sUARTMsgObject1.ui16MsgID = ui16ID;
+		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART5_BASE, &g_sUARTMsgObject5Tx);
+		UARTMessageSet(UART5_BASE, &g_sUARTMsgObject1);
 
-		PrintMessage(&g_sUARTMsgObject5Tx, g_pui8Msg5Tx, 10, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 10, 10);
 
 		// Send UART 7 message
-		g_pui8Msg7Tx[0] = ui8Byte0;
-		g_pui8Msg7Tx[1] = ui8Byte1;
-		g_pui8Msg7Tx[2] = ui8Byte2;
-		g_pui8Msg7Tx[3] = ui8Byte3;
-		g_pui8Msg7Tx[4] = ui8Byte4;
-		g_pui8Msg7Tx[5] = ui8Byte5;
-		g_pui8Msg7Tx[6] = ui8Byte6;
-		g_pui8Msg7Tx[7] = ui8Byte7;
+		g_pui8MsgTx[0] = ui8Byte0;
+		g_pui8MsgTx[1] = ui8Byte1;
+		g_pui8MsgTx[2] = ui8Byte2;
+		g_pui8MsgTx[3] = ui8Byte3;
+		g_pui8MsgTx[4] = ui8Byte4;
+		g_pui8MsgTx[5] = ui8Byte5;
+		g_pui8MsgTx[6] = ui8Byte6;
+		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject7Tx.ui16MsgID = ui16ID;
-		g_sUARTMsgObject7Tx.ui32MsgLen = sizeof(g_pui8Msg7Tx);
-		g_sUARTMsgObject7Tx.pui8MsgData = g_pui8Msg7Tx;
+		g_sUARTMsgObject1.ui16MsgID = ui16ID;
+		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART7_BASE, &g_sUARTMsgObject7Tx);
+		UARTMessageSet(UART7_BASE, &g_sUARTMsgObject1);
 
-		PrintMessage(&g_sUARTMsgObject7Tx, g_pui8Msg7Tx, 12, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 12, 10);
 
 		//*********************************************************************
 		// Rx messages
