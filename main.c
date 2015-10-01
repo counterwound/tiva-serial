@@ -417,7 +417,7 @@ void PrintMessage(tUARTMsgObject *sUARTMsgObject, uint8_t pui8Msg[], uint32_t ui
 		UARTprintf( "%02x ", pui8Msg[uIdx] );
 	}
 
-	UARTprintf("   %8d  %8d", ui32Rx, ui32Fx);
+	UARTprintf("   %5d    %5d", ui32Rx, ui32Fx);
 
 	UARTprintf("\033[2;1f");	// Set cursor to R2C1
 }
@@ -605,6 +605,6 @@ int main(void)
 		}
 
 		// Slow down the tests
-//		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
+		SysCtlDelay(SysCtlClockGet()/3000);	// Delay 1 ms
 	}
 }
