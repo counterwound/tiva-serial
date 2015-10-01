@@ -24,6 +24,13 @@
 #define UART_BAUD 		115200
 
 //*****************************************************************************
+// Global Variables
+//*****************************************************************************
+uint32_t ui32TotalTx[8] = {0,0,0,0,0,0,0,0}; // Total number of messages Rx and failed
+uint32_t ui32TotalRx[8] = {0,0,0,0,0,0,0,0}; // Total number of messages Rx successfully
+uint32_t ui32TotalFx[8] = {0,0,0,0,0,0,0,0}; // Total number of messages Rx and failed
+
+//*****************************************************************************
 // Flags
 //*****************************************************************************
 volatile bool g_bUART2RxFlag = 0;		// UART2 Rx Flag
@@ -70,6 +77,12 @@ void DrawScreen(void)
 
 	UARTprintf("\033[3;20f");	// Set cursor to R3C20
 	UARTprintf( "Message");
+
+	UARTprintf("\033[3;47f");	// Set cursor to R3C20
+	UARTprintf( "Tx/Rx");
+
+	UARTprintf("\033[3;57f");	// Set cursor to R3C20
+	UARTprintf( "Lost");
 
 	UARTprintf("\033[4;1f");	// Set cursor to R4C1
 	UARTprintf( "U2 Tx:\r\n");
@@ -139,27 +152,45 @@ void ConfigureUART(void)
 //*****************************************************************************
 void UART2IntHandler(void)
 {
-    uint32_t ui32Status;
+    uint32_t ui32StatusUART;
+    uint32_t ui32StatusMsg;
 
     // Get the interrrupt status.
-    ui32Status = UARTIntStatus(UART2_BASE, true);
+    ui32StatusUART = UARTIntStatus(UART2_BASE, true);
 
     // Clear the asserted interrupts.
-    UARTIntClear(UART2_BASE, ui32Status);
+    UARTIntClear(UART2_BASE, ui32StatusUART);
 
     // Interrupt for when data is Rx
     // Tied to UARTFIFOEnable()
-    if(ui32Status == UART_INT_RX)
+    if(ui32StatusUART == UART_INT_RX)
 	{
-    	g_bUART2RxFlag = 1;
+        // A buffer for storing the received data must be provided,
+        // so set the buffer pointer within the message object.
+        g_sUARTMsgObject2Rx.pui8MsgData = g_pui8Msg2Rx;
+
+        // Receive a message
+    	UARTMessageGet(UART2_BASE, &g_sUARTMsgObject2Rx);
+
+    	ui32StatusMsg = g_sUARTMsgObject2Rx.ui32Flags;
+
+    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	{
+    		// Interrupt triggered with correct CRC
+        	g_bUART2RxFlag = 1;
+        	ui32TotalRx[2]++;
+    	}
+    	else if ( ui32StatusMsg == MSG_OBJ_DATA_LOST )
+		{
+    		// Interrupt triggered, bad CRC
+    		ui32TotalRx[2]++;
+    		ui32TotalFx[2]++;;
+		}
+    	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
+    	{
+			// Interrupt triggered, but incorrect UMSG_START_BYTE
+		}
 	}
-
-    // A buffer for storing the received data must be provided,
-    // so set the buffer pointer within the message object.
-    g_sUARTMsgObject2Rx.pui8MsgData = g_pui8Msg2Rx;
-
-    // Receive a message
-	UARTMessageGet(UART2_BASE, &g_sUARTMsgObject2Rx);
 }
 
 //*****************************************************************************
@@ -167,27 +198,45 @@ void UART2IntHandler(void)
 //*****************************************************************************
 void UART3IntHandler(void)
 {
-    uint32_t ui32Status;
+    uint32_t ui32StatusUART;
+    uint32_t ui32StatusMsg;
 
     // Get the interrrupt status.
-    ui32Status = UARTIntStatus(UART3_BASE, true);
+    ui32StatusUART = UARTIntStatus(UART3_BASE, true);
 
     // Clear the asserted interrupts.
-    UARTIntClear(UART3_BASE, ui32Status);
+    UARTIntClear(UART3_BASE, ui32StatusUART);
 
     // Interrupt for when data is Rx
     // Tied to UARTFIFOEnable()
-    if(ui32Status == UART_INT_RX)
+    if(ui32StatusUART == UART_INT_RX)
 	{
-    	g_bUART3RxFlag = 1;
+        // A buffer for storing the received data must be provided,
+        // so set the buffer pointer within the message object.
+        g_sUARTMsgObject3Rx.pui8MsgData = g_pui8Msg3Rx;
+
+        // Receive a message
+    	UARTMessageGet(UART3_BASE, &g_sUARTMsgObject3Rx);
+
+    	ui32StatusMsg = g_sUARTMsgObject3Rx.ui32Flags;
+
+    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	{
+    		// Interrupt triggered with correct CRC
+        	g_bUART3RxFlag = 1;
+        	ui32TotalRx[3]++;
+    	}
+    	else if ( ui32StatusMsg == MSG_OBJ_DATA_LOST )
+		{
+    		// Interrupt triggered, bad CRC
+    		ui32TotalRx[3]++;
+    		ui32TotalFx[3]++;;
+		}
+    	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
+    	{
+			// Interrupt triggered, but incorrect UMSG_START_BYTE
+		}
 	}
-
-    // A buffer for storing the received data must be provided,
-    // so set the buffer pointer within the message object.
-    g_sUARTMsgObject3Rx.pui8MsgData = g_pui8Msg3Rx;
-
-    // Receive a message
-	UARTMessageGet(UART3_BASE, &g_sUARTMsgObject3Rx);
 }
 
 //*****************************************************************************
@@ -195,27 +244,45 @@ void UART3IntHandler(void)
 //*****************************************************************************
 void UART4IntHandler(void)
 {
-    uint32_t ui32Status;
+    uint32_t ui32StatusUART;
+    uint32_t ui32StatusMsg;
 
     // Get the interrrupt status.
-    ui32Status = UARTIntStatus(UART4_BASE, true);
+    ui32StatusUART = UARTIntStatus(UART4_BASE, true);
 
     // Clear the asserted interrupts.
-    UARTIntClear(UART4_BASE, ui32Status);
+    UARTIntClear(UART4_BASE, ui32StatusUART);
 
     // Interrupt for when data is Rx
     // Tied to UARTFIFOEnable()
-    if(ui32Status == UART_INT_RX)
+    if(ui32StatusUART == UART_INT_RX)
 	{
-    	g_bUART4RxFlag = 1;
+        // A buffer for storing the received data must be provided,
+        // so set the buffer pointer within the message object.
+        g_sUARTMsgObject4Rx.pui8MsgData = g_pui8Msg4Rx;
+
+        // Receive a message
+    	UARTMessageGet(UART4_BASE, &g_sUARTMsgObject4Rx);
+
+    	ui32StatusMsg = g_sUARTMsgObject4Rx.ui32Flags;
+
+    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	{
+    		// Interrupt triggered with correct CRC
+        	g_bUART4RxFlag = 1;
+        	ui32TotalRx[4]++;
+    	}
+    	else if ( ui32StatusMsg == MSG_OBJ_DATA_LOST )
+		{
+    		// Interrupt triggered, bad CRC
+    		ui32TotalRx[4]++;
+    		ui32TotalFx[4]++;;
+		}
+    	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
+    	{
+			// Interrupt triggered, but incorrect UMSG_START_BYTE
+		}
 	}
-
-    // A buffer for storing the received data must be provided,
-    // so set the buffer pointer within the message object.
-    g_sUARTMsgObject4Rx.pui8MsgData = g_pui8Msg4Rx;
-
-    // Receive a message
-	UARTMessageGet(UART4_BASE, &g_sUARTMsgObject4Rx);
 }
 
 //*****************************************************************************
@@ -223,27 +290,45 @@ void UART4IntHandler(void)
 //*****************************************************************************
 void UART5IntHandler(void)
 {
-    uint32_t ui32Status;
+    uint32_t ui32StatusUART;
+    uint32_t ui32StatusMsg;
 
     // Get the interrrupt status.
-    ui32Status = UARTIntStatus(UART5_BASE, true);
+    ui32StatusUART = UARTIntStatus(UART5_BASE, true);
 
     // Clear the asserted interrupts.
-    UARTIntClear(UART5_BASE, ui32Status);
+    UARTIntClear(UART5_BASE, ui32StatusUART);
 
     // Interrupt for when data is Rx
     // Tied to UARTFIFOEnable()
-    if(ui32Status == UART_INT_RX)
+    if(ui32StatusUART == UART_INT_RX)
 	{
-    	g_bUART5RxFlag = 1;
+        // A buffer for storing the received data must be provided,
+        // so set the buffer pointer within the message object.
+        g_sUARTMsgObject5Rx.pui8MsgData = g_pui8Msg5Rx;
+
+        // Receive a message
+    	UARTMessageGet(UART5_BASE, &g_sUARTMsgObject5Rx);
+
+    	ui32StatusMsg = g_sUARTMsgObject5Rx.ui32Flags;
+
+    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	{
+    		// Interrupt triggered with correct CRC
+        	g_bUART5RxFlag = 1;
+        	ui32TotalRx[5]++;
+    	}
+    	else if ( ui32StatusMsg == MSG_OBJ_DATA_LOST )
+		{
+    		// Interrupt triggered, bad CRC
+    		ui32TotalRx[5]++;
+    		ui32TotalFx[5]++;;
+		}
+    	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
+    	{
+			// Interrupt triggered, but incorrect UMSG_START_BYTE
+		}
 	}
-
-    // A buffer for storing the received data must be provided,
-    // so set the buffer pointer within the message object.
-    g_sUARTMsgObject5Rx.pui8MsgData = g_pui8Msg5Rx;
-
-    // Receive a message
-	UARTMessageGet(UART5_BASE, &g_sUARTMsgObject5Rx);
 }
 
 //*****************************************************************************
@@ -251,27 +336,45 @@ void UART5IntHandler(void)
 //*****************************************************************************
 void UART7IntHandler(void)
 {
-    uint32_t ui32Status;
+    uint32_t ui32StatusUART;
+    uint32_t ui32StatusMsg;
 
     // Get the interrrupt status.
-    ui32Status = UARTIntStatus(UART7_BASE, true);
+    ui32StatusUART = UARTIntStatus(UART7_BASE, true);
 
     // Clear the asserted interrupts.
-    UARTIntClear(UART7_BASE, ui32Status);
+    UARTIntClear(UART7_BASE, ui32StatusUART);
 
     // Interrupt for when data is Rx
     // Tied to UARTFIFOEnable()
-    if(ui32Status == UART_INT_RX)
+    if(ui32StatusUART == UART_INT_RX)
 	{
-    	g_bUART7RxFlag = 1;
+        // A buffer for storing the received data must be provided,
+        // so set the buffer pointer within the message object.
+        g_sUARTMsgObject7Rx.pui8MsgData = g_pui8Msg7Rx;
+
+        // Receive a message
+    	UARTMessageGet(UART7_BASE, &g_sUARTMsgObject7Rx);
+
+    	ui32StatusMsg = g_sUARTMsgObject7Rx.ui32Flags;
+
+    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	{
+    		// Interrupt triggered with correct CRC
+        	g_bUART7RxFlag = 1;
+        	ui32TotalRx[7]++;
+    	}
+    	else if ( ui32StatusMsg == MSG_OBJ_DATA_LOST )
+		{
+    		// Interrupt triggered, bad CRC
+    		ui32TotalRx[7]++;
+    		ui32TotalFx[7]++;;
+		}
+    	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
+    	{
+			// Interrupt triggered, but incorrect UMSG_START_BYTE
+		}
 	}
-
-    // A buffer for storing the received data must be provided,
-    // so set the buffer pointer within the message object.
-    g_sUARTMsgObject7Rx.pui8MsgData = g_pui8Msg7Rx;
-
-    // Receive a message
-	UARTMessageGet(UART7_BASE, &g_sUARTMsgObject7Rx);
 }
 
 //*****************************************************************************
@@ -301,7 +404,7 @@ void ConfigureInterrupts(void)
 //*****************************************************************************
 // Print message function
 //*****************************************************************************
-void PrintMessage(tUARTMsgObject *sUARTMsgObject, uint8_t pui8Msg[], uint32_t ui32Row, uint32_t ui32Col )
+void PrintMessage(tUARTMsgObject *sUARTMsgObject, uint8_t pui8Msg[], uint32_t ui32Row, uint32_t ui32Col, uint32_t ui32Rx, uint32_t ui32Fx)
 {
 	UARTprintf("\033[%d;%df",ui32Row,ui32Col);
 
@@ -313,6 +416,9 @@ void PrintMessage(tUARTMsgObject *sUARTMsgObject, uint8_t pui8Msg[], uint32_t ui
 	{
 		UARTprintf( "%02x ", pui8Msg[uIdx] );
 	}
+
+	UARTprintf("   %8d  %8d", ui32Rx, ui32Fx);
+
 	UARTprintf("\033[2;1f");	// Set cursor to R2C1
 }
 
@@ -384,8 +490,9 @@ int main(void)
 		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
 		UARTMessageSet(UART2_BASE, &g_sUARTMsgObject1);
+		ui32TotalTx[2]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 4, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 4, 10, ui32TotalTx[2], 0);
 
 		// Send UART 3 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -402,8 +509,9 @@ int main(void)
 		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
 		UARTMessageSet(UART3_BASE, &g_sUARTMsgObject1);
+		ui32TotalTx[3]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 6, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 6, 10, ui32TotalTx[3], 0);
 
 		// Send UART 4 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -420,8 +528,9 @@ int main(void)
 		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
 		UARTMessageSet(UART4_BASE, &g_sUARTMsgObject1);
+		ui32TotalTx[4]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 8, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 8, 10, ui32TotalTx[4], 0);
 
 		// Send UART 5 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -438,8 +547,9 @@ int main(void)
 		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
 		UARTMessageSet(UART5_BASE, &g_sUARTMsgObject1);
+		ui32TotalTx[5]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 10, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 10, 10, ui32TotalTx[5], 0);
 
 		// Send UART 7 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -456,8 +566,9 @@ int main(void)
 		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
 
 		UARTMessageSet(UART7_BASE, &g_sUARTMsgObject1);
+		ui32TotalTx[7]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 12, 10);
+		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 12, 10, ui32TotalTx[7], 0);
 
 		//*********************************************************************
 		// Rx messages
@@ -466,34 +577,34 @@ int main(void)
 		if ( g_bUART2RxFlag )
 		{
 			g_bUART2RxFlag = 0;
-			PrintMessage(&g_sUARTMsgObject2Rx, g_pui8Msg2Rx, 5, 10);
+			PrintMessage(&g_sUARTMsgObject2Rx, g_pui8Msg2Rx, 5, 10, ui32TotalRx[2], ui32TotalFx[2]);
 		}
 
 		if ( g_bUART3RxFlag )
 		{
 			g_bUART3RxFlag = 0;
-			PrintMessage(&g_sUARTMsgObject3Rx, g_pui8Msg3Rx, 7, 10);
+			PrintMessage(&g_sUARTMsgObject3Rx, g_pui8Msg3Rx, 7, 10, ui32TotalRx[3], ui32TotalFx[3]);
 		}
 
 		if ( g_bUART4RxFlag )
 		{
 			g_bUART4RxFlag = 0;
-			PrintMessage(&g_sUARTMsgObject4Rx, g_pui8Msg4Rx, 9, 10);
+			PrintMessage(&g_sUARTMsgObject4Rx, g_pui8Msg4Rx, 9, 10, ui32TotalRx[4], ui32TotalFx[4]);
 		}
 
 		if ( g_bUART5RxFlag )
 		{
 			g_bUART5RxFlag = 0;
-			PrintMessage(&g_sUARTMsgObject5Rx, g_pui8Msg5Rx, 11, 10);
+			PrintMessage(&g_sUARTMsgObject5Rx, g_pui8Msg5Rx, 11, 10, ui32TotalRx[5], ui32TotalFx[5]);
 		}
 
 		if ( g_bUART7RxFlag )
 		{
 			g_bUART7RxFlag = 0;
-			PrintMessage(&g_sUARTMsgObject7Rx, g_pui8Msg7Rx, 13, 10);
+			PrintMessage(&g_sUARTMsgObject7Rx, g_pui8Msg7Rx, 13, 10, ui32TotalRx[7], ui32TotalFx[7]);
 		}
 
 		// Slow down the tests
-		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
+//		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1 second
 	}
 }
