@@ -43,7 +43,7 @@ volatile bool g_bUART7RxFlag = 0;		// UART7 Rx Flag
 // UART message objects that will hold the separate UART messages
 //*****************************************************************************
 
-tUARTMsgObject g_sUARTMsgObject1;
+tUARTMsgObject g_sUARTMsgObjectTx;
 tUARTMsgObject g_sUARTMsgObject2Rx;
 tUARTMsgObject g_sUARTMsgObject3Rx;
 tUARTMsgObject g_sUARTMsgObject4Rx;
@@ -122,7 +122,7 @@ void ConfigureUART(void)
 	UARTFIFOEnable(UART2_BASE);
 	UARTFIFOLevelSet(UART2_BASE, UART_FIFO_TX1_8, UART_FIFO_RX7_8);
 
-	// Initialize UART2
+	// Initialize UART3
 	UARTConfigSetExpClk(UART3_BASE, SysCtlClockGet(), UART_BAUD,
 			(UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
 	UARTFIFOEnable(UART3_BASE);
@@ -174,7 +174,7 @@ void UART2IntHandler(void)
 
     	ui32StatusMsg = g_sUARTMsgObject2Rx.ui32Flags;
 
-    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	if ( ui32StatusMsg == MSG_OBJ_NEW_DATA )
     	{
     		// Interrupt triggered with correct CRC
         	g_bUART2RxFlag = 1;
@@ -220,7 +220,7 @@ void UART3IntHandler(void)
 
     	ui32StatusMsg = g_sUARTMsgObject3Rx.ui32Flags;
 
-    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	if ( ui32StatusMsg == MSG_OBJ_NEW_DATA )
     	{
     		// Interrupt triggered with correct CRC
         	g_bUART3RxFlag = 1;
@@ -266,7 +266,7 @@ void UART4IntHandler(void)
 
     	ui32StatusMsg = g_sUARTMsgObject4Rx.ui32Flags;
 
-    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	if ( ui32StatusMsg == MSG_OBJ_NEW_DATA )
     	{
     		// Interrupt triggered with correct CRC
         	g_bUART4RxFlag = 1;
@@ -312,7 +312,7 @@ void UART5IntHandler(void)
 
     	ui32StatusMsg = g_sUARTMsgObject5Rx.ui32Flags;
 
-    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	if ( ui32StatusMsg == MSG_OBJ_NEW_DATA )
     	{
     		// Interrupt triggered with correct CRC
         	g_bUART5RxFlag = 1;
@@ -358,7 +358,7 @@ void UART7IntHandler(void)
 
     	ui32StatusMsg = g_sUARTMsgObject7Rx.ui32Flags;
 
-    	if ( MSG_OBJ_NEW_DATA == ui32StatusMsg )
+    	if ( ui32StatusMsg == MSG_OBJ_NEW_DATA )
     	{
     		// Interrupt triggered with correct CRC
         	g_bUART7RxFlag = 1;
@@ -485,14 +485,14 @@ int main(void)
 		g_pui8MsgTx[6] = ui8Byte6;
 		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject1.ui16MsgID = ui16ID;
-		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
+		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
+		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART2_BASE, &g_sUARTMsgObject1);
+		UARTMessageSet(UART2_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[2]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 4, 10, ui32TotalTx[2], 0);
+		PrintMessage(&g_sUARTMsgObjectTx, g_pui8MsgTx, 4, 10, ui32TotalTx[2], 0);
 
 		// Send UART 3 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -504,14 +504,14 @@ int main(void)
 		g_pui8MsgTx[6] = ui8Byte6;
 		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject1.ui16MsgID = ui16ID;
-		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
+		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
+		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART3_BASE, &g_sUARTMsgObject1);
+		UARTMessageSet(UART3_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[3]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 6, 10, ui32TotalTx[3], 0);
+		PrintMessage(&g_sUARTMsgObjectTx, g_pui8MsgTx, 6, 10, ui32TotalTx[3], 0);
 
 		// Send UART 4 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -523,14 +523,14 @@ int main(void)
 		g_pui8MsgTx[6] = ui8Byte6;
 		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject1.ui16MsgID = ui16ID;
-		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
+		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
+		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART4_BASE, &g_sUARTMsgObject1);
+		UARTMessageSet(UART4_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[4]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 8, 10, ui32TotalTx[4], 0);
+		PrintMessage(&g_sUARTMsgObjectTx, g_pui8MsgTx, 8, 10, ui32TotalTx[4], 0);
 
 		// Send UART 5 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -542,14 +542,14 @@ int main(void)
 		g_pui8MsgTx[6] = ui8Byte6;
 		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject1.ui16MsgID = ui16ID;
-		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
+		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
+		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART5_BASE, &g_sUARTMsgObject1);
+		UARTMessageSet(UART5_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[5]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 10, 10, ui32TotalTx[5], 0);
+		PrintMessage(&g_sUARTMsgObjectTx, g_pui8MsgTx, 10, 10, ui32TotalTx[5], 0);
 
 		// Send UART 7 message
 		g_pui8MsgTx[0] = ui8Byte0;
@@ -561,14 +561,14 @@ int main(void)
 		g_pui8MsgTx[6] = ui8Byte6;
 		g_pui8MsgTx[7] = ui8Byte7;
 
-		g_sUARTMsgObject1.ui16MsgID = ui16ID;
-		g_sUARTMsgObject1.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObject1.pui8MsgData = g_pui8MsgTx;
+		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
+		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
+		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
 
-		UARTMessageSet(UART7_BASE, &g_sUARTMsgObject1);
+		UARTMessageSet(UART7_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[7]++;
 
-		PrintMessage(&g_sUARTMsgObject1, g_pui8MsgTx, 12, 10, ui32TotalTx[7], 0);
+		PrintMessage(&g_sUARTMsgObjectTx, g_pui8MsgTx, 12, 10, ui32TotalTx[7], 0);
 
 		//*********************************************************************
 		// Rx messages
