@@ -184,7 +184,7 @@ void UART2IntHandler(void)
 		{
     		// Interrupt triggered, bad CRC
     		ui32TotalRx[2]++;
-    		ui32TotalFx[2]++;;
+    		ui32TotalFx[2]++;
 		}
     	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
     	{
@@ -230,7 +230,7 @@ void UART3IntHandler(void)
 		{
     		// Interrupt triggered, bad CRC
     		ui32TotalRx[3]++;
-    		ui32TotalFx[3]++;;
+    		ui32TotalFx[3]++;
 		}
     	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
     	{
@@ -276,7 +276,7 @@ void UART4IntHandler(void)
 		{
     		// Interrupt triggered, bad CRC
     		ui32TotalRx[4]++;
-    		ui32TotalFx[4]++;;
+    		ui32TotalFx[4]++;
 		}
     	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
     	{
@@ -322,7 +322,7 @@ void UART5IntHandler(void)
 		{
     		// Interrupt triggered, bad CRC
     		ui32TotalRx[5]++;
-    		ui32TotalFx[5]++;;
+    		ui32TotalFx[5]++;
 		}
     	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
     	{
@@ -368,7 +368,7 @@ void UART7IntHandler(void)
 		{
     		// Interrupt triggered, bad CRC
     		ui32TotalRx[7]++;
-    		ui32TotalFx[7]++;;
+    		ui32TotalFx[7]++;
 		}
     	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
     	{
