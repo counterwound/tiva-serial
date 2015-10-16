@@ -54,6 +54,7 @@ extern uint32_t __STACK_TOP;
 // External declarations for the interrupt handlers used by the application.
 //
 //*****************************************************************************
+extern void UARTIntHandler(uint32_t numUart);
 extern void UART2IntHandler(void);
 extern void UART3IntHandler(void);
 extern void UART4IntHandler(void);
