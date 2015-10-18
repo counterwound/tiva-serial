@@ -165,38 +165,35 @@ void UARTIntHandler(uint32_t uartBase)
     case UART2_BASE:
     	numUart = 2;
     	uartMsgObject = &g_sUARTMsgObject2Rx;
-    	uartMsgBuf = &g_pui8Msg2Rx[0];
+    	uartMsgBuf = g_pui8Msg2Rx;
     	uartRxFlag = &g_bUART2RxFlag;
     	break;
     case UART3_BASE:
     	numUart = 3;
     	uartMsgObject = &g_sUARTMsgObject3Rx;
-    	uartMsgBuf = &g_pui8Msg3Rx[0];
+    	uartMsgBuf = g_pui8Msg3Rx;
     	uartRxFlag = &g_bUART3RxFlag;
     	break;
     case UART4_BASE:
     	numUart = 4;
     	uartMsgObject = &g_sUARTMsgObject4Rx;
-    	uartMsgBuf = &g_pui8Msg4Rx[0];
+    	uartMsgBuf = g_pui8Msg4Rx;
     	uartRxFlag = &g_bUART4RxFlag;
     	break;
     case UART5_BASE:
     	numUart = 5;
     	uartMsgObject = &g_sUARTMsgObject5Rx;
-    	uartMsgBuf = &g_pui8Msg5Rx[0];
+    	uartMsgBuf = g_pui8Msg5Rx;
     	uartRxFlag = &g_bUART5RxFlag;
     	break;
     case UART7_BASE:
     	numUart = 7;
     	uartMsgObject = &g_sUARTMsgObject7Rx;
-    	uartMsgBuf = &g_pui8Msg7Rx[0];
+    	uartMsgBuf = g_pui8Msg7Rx;
     	uartRxFlag = &g_bUART7RxFlag;
     	break;
     default:
-    	// should never be here!
-    	uartMsgBuf = 0;
-    	// so, crash so it is obvious...
-    	uartMsgBuf[0] = (uint8_t)0xDEAD;
+    	break;
     }
 
     // Get the interrrupt status.
