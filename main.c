@@ -151,47 +151,52 @@ void ConfigureUART(void)
 // Generic UART interrupt handler
 //*****************************************************************************
 
-void UARTIntHandler(uint32_t numUart)
+void UARTIntHandler(uint32_t uartBase)
 {
     uint32_t ui32StatusUART;
-    uint32_t ui32StatusMsg;
 
-    uint32_t uartBase = 0;
     tUARTMsgObject* uartMsgObject;
     uint8_t* uartMsgBuf;
+    size_t numUart;
+    volatile bool* uartRxFlag;
 
-    switch(numUart)
+    switch(uartBase)
     {
-    case 2:
-    	uartBase = UART2_BASE;
+    case UART2_BASE:
+    	numUart = 2;
     	uartMsgObject = &g_sUARTMsgObject2Rx;
-    	uartMsgBuf = g_pui8Msg2Rx;
+    	uartMsgBuf = &g_pui8Msg2Rx[0];
+    	uartRxFlag = &g_bUART2RxFlag;
     	break;
-    case 3:
-    	uartBase = UART3_BASE;
+    case UART3_BASE:
+    	numUart = 3;
     	uartMsgObject = &g_sUARTMsgObject3Rx;
-    	uartMsgBuf = g_pui8Msg3Rx;
+    	uartMsgBuf = &g_pui8Msg3Rx[0];
+    	uartRxFlag = &g_bUART3RxFlag;
     	break;
-    case 4:
-    	uartBase = UART4_BASE;
+    case UART4_BASE:
+    	numUart = 4;
     	uartMsgObject = &g_sUARTMsgObject4Rx;
-    	uartMsgBuf = g_pui8Msg4Rx;
+    	uartMsgBuf = &g_pui8Msg4Rx[0];
+    	uartRxFlag = &g_bUART4RxFlag;
     	break;
-    case 5:
-    	uartBase = UART5_BASE;
+    case UART5_BASE:
+    	numUart = 5;
     	uartMsgObject = &g_sUARTMsgObject5Rx;
-    	uartMsgBuf = g_pui8Msg5Rx;
+    	uartMsgBuf = &g_pui8Msg5Rx[0];
+    	uartRxFlag = &g_bUART5RxFlag;
     	break;
-    case 7:
-    	uartBase = UART7_BASE;
+    case UART7_BASE:
+    	numUart = 7;
     	uartMsgObject = &g_sUARTMsgObject7Rx;
-    	uartMsgBuf = g_pui8Msg7Rx;
+    	uartMsgBuf = &g_pui8Msg7Rx[0];
+    	uartRxFlag = &g_bUART7RxFlag;
     	break;
     default:
     	// should never be here!
     	uartMsgBuf = 0;
     	// so, crash so it is obvious...
-    	*uartMsgBuf = (uint8_t)0xDEAD;
+    	uartMsgBuf[0] = (uint8_t)0xDEAD;
     }
 
     // Get the interrrupt status.
@@ -209,26 +214,25 @@ void UARTIntHandler(uint32_t numUart)
     	uartMsgObject->pui8MsgData = uartMsgBuf;
 
         // Receive a message
-    	//UARTMessageGet(uartBase, uartMsgObject);
+    	UARTMessageGet(uartBase, uartMsgObject);
 
-    	ui32StatusMsg = uartMsgObject->ui32Flags;
-
-    	if ( ui32StatusMsg == MSG_OBJ_NEW_DATA )
+    	switch(uartMsgObject->ui32Flags)
     	{
+    	case MSG_OBJ_NEW_DATA:
     		// Interrupt triggered with correct CRC
-        	g_bUART2RxFlag = 1;
-        	ui32TotalRx[numUart]++;
-    	}
-    	else if ( ui32StatusMsg == MSG_OBJ_DATA_LOST )
-		{
+    		*uartRxFlag = 1;
+    		ui32TotalRx[numUart]++;
+    		break;
+    	case MSG_OBJ_DATA_LOST:
     		// Interrupt triggered, bad CRC
     		ui32TotalRx[numUart]++;
     		ui32TotalFx[numUart]++;
-		}
-    	else if ( ui32StatusMsg == MSG_OBJ_NO_FLAGS )
-    	{
-			// Interrupt triggered, but incorrect UMSG_START_BYTE
-		}
+    		break;
+    	case MSG_OBJ_NO_FLAGS:
+    		// Interrupt triggered, but incorrect UMSG_START_BYTE
+    	default:
+    		break;
+    	}
 	}
 }
 
@@ -237,7 +241,7 @@ void UARTIntHandler(uint32_t numUart)
 //*****************************************************************************
 void UART2IntHandler(void)
 {
-	UARTIntHandler(2);
+	UARTIntHandler((uint32_t)UART2_BASE);
 }
 
 //*****************************************************************************
@@ -245,7 +249,7 @@ void UART2IntHandler(void)
 //*****************************************************************************
 void UART3IntHandler(void)
 {
-	UARTIntHandler(3);
+	UARTIntHandler((uint32_t)UART3_BASE);
 }
 
 //*****************************************************************************
@@ -253,7 +257,7 @@ void UART3IntHandler(void)
 //*****************************************************************************
 void UART4IntHandler(void)
 {
-	UARTIntHandler(4);
+	UARTIntHandler((uint32_t)UART4_BASE);
 }
 
 //*****************************************************************************
@@ -261,7 +265,7 @@ void UART4IntHandler(void)
 //*****************************************************************************
 void UART5IntHandler(void)
 {
-	UARTIntHandler(5);
+	UARTIntHandler((uint32_t)UART5_BASE);
 }
 
 //*****************************************************************************
@@ -269,7 +273,7 @@ void UART5IntHandler(void)
 //*****************************************************************************
 void UART7IntHandler(void)
 {
-	UARTIntHandler(7);
+	UARTIntHandler((uint32_t)UART7_BASE);
 }
 
 //*****************************************************************************
