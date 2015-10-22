@@ -18,6 +18,7 @@
 #include "utils/uartstdio.h"
 #include "utils/random.h"
 #include "uart-message/umsg.h"
+#include "message-buffer/buffer.h"
 #include "pinmux.h"
 
 #define SCREEN_BAUD 	115200

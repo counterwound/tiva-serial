@@ -1,3 +1,6 @@
 [submodule "uart-message"]
 	path = uart-message
 	url = git@github.com:counterwound/uart-message.git
+[submodule "message-buffer"]
+	path = message-buffer
+	url = git@github.com:counterwound/message-buffer.git
