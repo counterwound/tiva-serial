@@ -64,7 +64,7 @@ uint8_t g_pui8Msg5Rx[8];
 uint8_t g_pui8Msg7Rx[8];
 
 tMsgObject UARTMsgContainer;
-tMsgObject UARTMsgArray[32];
+tMsgObject UARTMsgArray[8];
 tMsgBuffer UARTMsgBuffer;
 
 //*****************************************************************************
@@ -165,7 +165,6 @@ void UARTIntHandler(uint32_t uartBase)
     uint8_t* uartMsgBuf;
     size_t numUart;
     volatile bool* uartRxFlag;
-    tMsgObject tempMsgObject;
 
     switch(uartBase)
     {
@@ -219,8 +218,8 @@ void UARTIntHandler(uint32_t uartBase)
 
         // Receive a message
     	UARTMessageGet(uartBase, uartMsgObject);
-    	populateMsgObject(&tempMsgObject, uartMsgObject->ui16MsgID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
-    	pushMsgToBuf(tempMsgObject, &UARTMsgBuffer);
+    	populateMsgObject(&UARTMsgContainer, uartMsgObject->ui16MsgID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
+    	pushMsgToBuf(UARTMsgContainer, &UARTMsgBuffer);
 
     	switch(uartMsgObject->ui32Flags)
     	{
@@ -340,7 +339,7 @@ int main(void)
     PortFunctionInit();
     ConfigureUART();
     ConfigureInterrupts();
-    initMsgBuffer(&UARTMsgBuffer, UARTMsgArray, 32);
+    initMsgBuffer(&UARTMsgBuffer, UARTMsgArray, 8);
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObject2Rx.ui16MsgID = 0;
