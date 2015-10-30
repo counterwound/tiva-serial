@@ -63,8 +63,9 @@ uint8_t g_pui8Msg4Rx[8];
 uint8_t g_pui8Msg5Rx[8];
 uint8_t g_pui8Msg7Rx[8];
 
+#define UARTMsgArraySize 8
 tMsgObject UARTMsgContainer;
-tMsgObject UARTMsgArray[8];
+tMsgObject UARTMsgArray[UARTMsgArraySize];
 tMsgBuffer UARTMsgBuffer;
 
 //*****************************************************************************
@@ -339,7 +340,9 @@ int main(void)
     PortFunctionInit();
     ConfigureUART();
     ConfigureInterrupts();
-    initMsgBuffer(&UARTMsgBuffer, UARTMsgArray, 8);
+
+    // initialize the generic message buffer that will hold UART messages
+    initMsgBuffer(&UARTMsgBuffer, UARTMsgArray, UARTMsgArraySize);
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObject2Rx.ui16MsgID = 0;
