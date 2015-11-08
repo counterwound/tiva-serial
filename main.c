@@ -55,7 +55,6 @@ tUARTMsgObject g_sUARTMsgObject7Rx;
 //*****************************************************************************
 // Message buffers that hold the contents of the messages
 //*****************************************************************************
-
 uint8_t g_pui8MsgTx[8];
 uint8_t g_pui8Msg2Rx[8];
 uint8_t g_pui8Msg3Rx[8];
@@ -63,10 +62,13 @@ uint8_t g_pui8Msg4Rx[8];
 uint8_t g_pui8Msg5Rx[8];
 uint8_t g_pui8Msg7Rx[8];
 
+//*****************************************************************************
+// Message buffers that hold the contents of the messages
+//*****************************************************************************
 #define UARTMsgArraySize 8
 tMsgObject UARTMsgContainer;
 tMsgObject UARTMsgArray[UARTMsgArraySize];
-tMsgBuffer UARTMsgBuffer;
+tBufObject UARTMsgBuffer;
 
 //*****************************************************************************
 // The interrupt handler for the UART2 interrupt
@@ -157,7 +159,6 @@ void ConfigureUART(void)
 //*****************************************************************************
 // Generic UART interrupt handler
 //*****************************************************************************
-
 void UARTIntHandler(uint32_t uartBase)
 {
     uint32_t ui32StatusUART;
@@ -219,7 +220,7 @@ void UARTIntHandler(uint32_t uartBase)
 
         // Receive a message
     	UARTMessageGet(uartBase, uartMsgObject);
-    	populateMsgObject(&UARTMsgContainer, uartMsgObject->ui16MsgID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
+    	populateMsgObject(&UARTMsgContainer, (uint32_t) (uartMsgObject->ui16MsgID | numUart*0x10000), uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
     	pushMsgToBuf(&UARTMsgBuffer, UARTMsgContainer);
 
     	switch(uartMsgObject->ui32Flags)
@@ -243,40 +244,28 @@ void UARTIntHandler(uint32_t uartBase)
 }
 
 //*****************************************************************************
-// The interrupt handler for the UART2 interrupt
+// The interrupt handler for the UART interrupts
 //*****************************************************************************
 void UART2IntHandler(void)
 {
 	UARTIntHandler((uint32_t)UART2_BASE);
 }
 
-//*****************************************************************************
-// The interrupt handler for the UART3 interrupt
-//*****************************************************************************
 void UART3IntHandler(void)
 {
 	UARTIntHandler((uint32_t)UART3_BASE);
 }
 
-//*****************************************************************************
-// The interrupt handler for the UART4 interrupt
-//*****************************************************************************
 void UART4IntHandler(void)
 {
 	UARTIntHandler((uint32_t)UART4_BASE);
 }
 
-//*****************************************************************************
-// The interrupt handler for the UART5 interrupt
-//*****************************************************************************
 void UART5IntHandler(void)
 {
 	UARTIntHandler((uint32_t)UART5_BASE);
 }
 
-//*****************************************************************************
-// The interrupt handler for the UART7 interrupt
-//*****************************************************************************
 void UART7IntHandler(void)
 {
 	UARTIntHandler((uint32_t)UART7_BASE);
@@ -375,7 +364,7 @@ int main(void)
 	// data for test buffer
 	tMsgObject msgFifoUart[szBufUart];
 	tMsgObject poppedMsg;
-	tMsgBuffer msgBufUart;
+	tBufObject msgBufUart;
 	uint64_t bufCnt;
 	bool bufEmpty;
 
