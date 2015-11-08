@@ -220,7 +220,7 @@ void UARTIntHandler(uint32_t uartBase)
         // Receive a message
     	UARTMessageGet(uartBase, uartMsgObject);
     	populateMsgObject(&UARTMsgContainer, uartMsgObject->ui16MsgID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
-    	pushMsgToBuf(UARTMsgContainer, &UARTMsgBuffer);
+    	pushMsgToBuf(&UARTMsgBuffer, UARTMsgContainer);
 
     	switch(uartMsgObject->ui32Flags)
     	{
@@ -393,8 +393,8 @@ int main(void)
 	UARTprintf("Count 0x%x\r\n",&bufCnt);
 
 	// then push those messages into the buffer
-	pushMsgToBuf(testMsg1, &msgBufUart);
-	pushMsgToBuf(testMsg2, &msgBufUart);
+	pushMsgToBuf(&msgBufUart, testMsg1);
+	pushMsgToBuf(&msgBufUart, testMsg2);
 
 	// check if empty (should not be) and count (should == 2)
 	bufEmpty = isBufEmpty(&msgBufUart);
@@ -403,7 +403,7 @@ int main(void)
 	UARTprintf("Count 0x%x\r\n",&bufCnt);
 
 	// then pop the first one
-	poppedMsg = popMsgFromBuf(&msgBufUart);
+	popMsgFromBuf(&msgBufUart, &poppedMsg);
 	UARTprintf("Popped 0x%x\r\n",poppedMsg);
 
 	// then check count (should == 1)
