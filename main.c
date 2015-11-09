@@ -44,21 +44,13 @@ volatile bool g_bUART7RxFlag = 0;		// UART7 Rx Flag
 // UART message objects that will hold the separate UART messages
 //*****************************************************************************
 tUARTMsgObject g_sUARTMsgObjectTx;
-tUARTMsgObject g_sUARTMsgObject2Rx;
-tUARTMsgObject g_sUARTMsgObject3Rx;
-tUARTMsgObject g_sUARTMsgObject4Rx;
-tUARTMsgObject g_sUARTMsgObject5Rx;
-tUARTMsgObject g_sUARTMsgObject7Rx;
+tUARTMsgObject g_sUARTMsgObjectRx;
 
 //*****************************************************************************
 // Message buffers that hold the contents of the messages
 //*****************************************************************************
-uint8_t g_pui8MsgTx[8];
-uint8_t g_pui8UART2DataRx[8];
-uint8_t g_pui8UART3DataRx[8];
-uint8_t g_pui8UART4DataRx[8];
-uint8_t g_pui8UART5DataRx[8];
-uint8_t g_pui8UART7DataRx[8];
+uint8_t g_pui8UARTDataTx[8];
+uint8_t g_pui8UARTDataRx[8];
 
 //*****************************************************************************
 // The interrupt handler for the UART2 interrupt
@@ -81,19 +73,19 @@ void DrawScreen(void)
 	UARTprintf( "U2 Tx:\r\n");
 	UARTprintf( "   Rx:\r\n");
 
-	UARTprintf("\033[6;1f");	// Set cursor to R6C1
+	UARTprintf("\033[7;1f");	// Set cursor to R6C1
 	UARTprintf( "U3 Tx:\r\n");
 	UARTprintf( "   Rx:\r\n");
 
-	UARTprintf("\033[8;1f");	// Set cursor to R8C1
+	UARTprintf("\033[10;1f");	// Set cursor to R8C1
 	UARTprintf( "U4 Tx:\r\n");
 	UARTprintf( "   Rx:\r\n");
 
-	UARTprintf("\033[10;1f");	// Set cursor to R10C1
+	UARTprintf("\033[13;1f");	// Set cursor to R10C1
 	UARTprintf( "U5 Tx:\r\n");
 	UARTprintf( "   Rx:\r\n");
 
-	UARTprintf("\033[12;1f");	// Set cursor to R12C1
+	UARTprintf("\033[16;1f");	// Set cursor to R12C1
 	UARTprintf( "U7 Tx:\r\n");
 	UARTprintf( "   Rx:\r\n");
 }
@@ -145,10 +137,10 @@ void ConfigureUART(void)
 //*****************************************************************************
 void UARTIntHandler(uint32_t uartBase)
 {
-    uint32_t ui32StatusUART;
+	uint32_t ui32StatusUART;
 
-    tUARTMsgObject* uartMsgObject;
-    uint8_t* uartMsgBuf;
+    tUARTMsgObject* uartMsgObject = &g_sUARTMsgObjectRx;
+    uint8_t* uartMsgBuf = g_pui8UARTDataRx;
     size_t numUart;
     volatile bool* uartRxFlag;
 
@@ -156,32 +148,22 @@ void UARTIntHandler(uint32_t uartBase)
     {
     case UART2_BASE:
     	numUart = 2;
-    	uartMsgObject = &g_sUARTMsgObject2Rx;
-    	uartMsgBuf = g_pui8UART2DataRx;
     	uartRxFlag = &g_bUART2RxFlag;
     	break;
     case UART3_BASE:
     	numUart = 3;
-    	uartMsgObject = &g_sUARTMsgObject3Rx;
-    	uartMsgBuf = g_pui8UART3DataRx;
     	uartRxFlag = &g_bUART3RxFlag;
     	break;
     case UART4_BASE:
     	numUart = 4;
-    	uartMsgObject = &g_sUARTMsgObject4Rx;
-    	uartMsgBuf = g_pui8UART4DataRx;
     	uartRxFlag = &g_bUART4RxFlag;
     	break;
     case UART5_BASE:
     	numUart = 5;
-    	uartMsgObject = &g_sUARTMsgObject5Rx;
-    	uartMsgBuf = g_pui8UART5DataRx;
     	uartRxFlag = &g_bUART5RxFlag;
     	break;
     case UART7_BASE:
     	numUart = 7;
-    	uartMsgObject = &g_sUARTMsgObject7Rx;
-    	uartMsgBuf = g_pui8UART7DataRx;
     	uartRxFlag = &g_bUART7RxFlag;
     	break;
     default:
@@ -278,16 +260,6 @@ void ConfigureInterrupts(void)
 }
 
 //*****************************************************************************
-// Print message function
-//*****************************************************************************
-void PrintMessage(uint32_t ui32Row, uint32_t ui32Col, uint32_t ui32Rx, uint32_t ui32Fx)
-{
-	UARTprintf("\033[%d;%df",ui32Row,ui32Col);
-	UARTprintf("   %5d    %5d", ui32Rx, ui32Fx);
-	UARTprintf("\033[2;1f");	// Set cursor to R2C1
-}
-
-//*****************************************************************************
 // Main code starts here
 //*****************************************************************************
 int main(void)
@@ -302,126 +274,49 @@ int main(void)
     ConfigureInterrupts();
 
     // Initialize a message object to be used for receiving UART messages
-	g_sUARTMsgObject2Rx.ui16MsgID = 0;
-	g_sUARTMsgObject2Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
-
-    // Initialize a message object to be used for receiving UART messages
-	g_sUARTMsgObject3Rx.ui16MsgID = 0;
-	g_sUARTMsgObject3Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
-
-    // Initialize a message object to be used for receiving UART messages
-	g_sUARTMsgObject4Rx.ui16MsgID = 0;
-	g_sUARTMsgObject4Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
-
-    // Initialize a message object to be used for receiving UART messages
-	g_sUARTMsgObject5Rx.ui16MsgID = 0;
-	g_sUARTMsgObject5Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
-
-    // Initialize a message object to be used for receiving UART messages
-	g_sUARTMsgObject7Rx.ui16MsgID = 0;
-	g_sUARTMsgObject7Rx.ui32MsgLen = sizeof(g_pui8MsgTx);
+	g_sUARTMsgObjectRx.ui16MsgID = 0;
+	g_sUARTMsgObjectRx.ui32MsgLen = sizeof(g_pui8UARTDataTx);
 
 	DrawScreen();
 
 	while (1)
 	{
 		// Generate random message to send
-		uint8_t ui8Byte0 = rand();
-		uint8_t ui8Byte1 = rand();
-		uint8_t ui8Byte2 = rand();
-		uint8_t ui8Byte3 = rand();
-		uint8_t ui8Byte4 = rand();
-		uint8_t ui8Byte5 = rand();
-		uint8_t ui8Byte6 = rand();
-		uint8_t ui8Byte7 = rand();
 		uint16_t ui16ID = rand();
+		g_pui8UARTDataTx[0] = rand();
+		g_pui8UARTDataTx[1] = rand();
+		g_pui8UARTDataTx[2] = rand();
+		g_pui8UARTDataTx[3] = rand();
+		g_pui8UARTDataTx[4] = rand();
+		g_pui8UARTDataTx[5] = rand();
+		g_pui8UARTDataTx[6] = rand();
+		g_pui8UARTDataTx[7] = rand();
+
+		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
+		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8UARTDataTx);
+		g_sUARTMsgObjectTx.pui8MsgData = g_pui8UARTDataTx;
 
 		//*********************************************************************
 		// Tx messages
 		//*********************************************************************
 
 		// Send UART 2 message
-		g_pui8MsgTx[0] = ui8Byte0;
-		g_pui8MsgTx[1] = ui8Byte1;
-		g_pui8MsgTx[2] = ui8Byte2;
-		g_pui8MsgTx[3] = ui8Byte3;
-		g_pui8MsgTx[4] = ui8Byte4;
-		g_pui8MsgTx[5] = ui8Byte5;
-		g_pui8MsgTx[6] = ui8Byte6;
-		g_pui8MsgTx[7] = ui8Byte7;
-
-		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
-		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
-
 		UARTMessageSet(UART2_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[2]++;
 
 		// Send UART 3 message
-		g_pui8MsgTx[0] = ui8Byte0;
-		g_pui8MsgTx[1] = ui8Byte1;
-		g_pui8MsgTx[2] = ui8Byte2;
-		g_pui8MsgTx[3] = ui8Byte3;
-		g_pui8MsgTx[4] = ui8Byte4;
-		g_pui8MsgTx[5] = ui8Byte5;
-		g_pui8MsgTx[6] = ui8Byte6;
-		g_pui8MsgTx[7] = ui8Byte7;
-
-		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
-		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
-
 		UARTMessageSet(UART3_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[3]++;
 
 		// Send UART 4 message
-		g_pui8MsgTx[0] = ui8Byte0;
-		g_pui8MsgTx[1] = ui8Byte1;
-		g_pui8MsgTx[2] = ui8Byte2;
-		g_pui8MsgTx[3] = ui8Byte3;
-		g_pui8MsgTx[4] = ui8Byte4;
-		g_pui8MsgTx[5] = ui8Byte5;
-		g_pui8MsgTx[6] = ui8Byte6;
-		g_pui8MsgTx[7] = ui8Byte7;
-
-		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
-		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
-
 		UARTMessageSet(UART4_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[4]++;
 
 		// Send UART 5 message
-		g_pui8MsgTx[0] = ui8Byte0;
-		g_pui8MsgTx[1] = ui8Byte1;
-		g_pui8MsgTx[2] = ui8Byte2;
-		g_pui8MsgTx[3] = ui8Byte3;
-		g_pui8MsgTx[4] = ui8Byte4;
-		g_pui8MsgTx[5] = ui8Byte5;
-		g_pui8MsgTx[6] = ui8Byte6;
-		g_pui8MsgTx[7] = ui8Byte7;
-
-		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
-		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
-
 		UARTMessageSet(UART5_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[5]++;
 
 		// Send UART 7 message
-		g_pui8MsgTx[0] = ui8Byte0;
-		g_pui8MsgTx[1] = ui8Byte1;
-		g_pui8MsgTx[2] = ui8Byte2;
-		g_pui8MsgTx[3] = ui8Byte3;
-		g_pui8MsgTx[4] = ui8Byte4;
-		g_pui8MsgTx[5] = ui8Byte5;
-		g_pui8MsgTx[6] = ui8Byte6;
-		g_pui8MsgTx[7] = ui8Byte7;
-
-		g_sUARTMsgObjectTx.ui16MsgID = ui16ID;
-		g_sUARTMsgObjectTx.ui32MsgLen = sizeof(g_pui8MsgTx);
-		g_sUARTMsgObjectTx.pui8MsgData = g_pui8MsgTx;
-
 		UARTMessageSet(UART7_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[7]++;
 
@@ -456,24 +351,24 @@ int main(void)
 
 		UARTprintf("\033[%d;%df",4,10);
 		UARTprintf("%5d", ui32TotalTx[2]);
-		UARTprintf("\033[%d;%df",6,10);
+		UARTprintf("\033[%d;%df",7,10);
 		UARTprintf("%5d", ui32TotalTx[3]);
-		UARTprintf("\033[%d;%df",8,10);
-		UARTprintf("%5d", ui32TotalTx[4]);
 		UARTprintf("\033[%d;%df",10,10);
+		UARTprintf("%5d", ui32TotalTx[4]);
+		UARTprintf("\033[%d;%df",13,10);
 		UARTprintf("%5d", ui32TotalTx[5]);
-		UARTprintf("\033[%d;%df",12,10);
+		UARTprintf("\033[%d;%df",16,10);
 		UARTprintf("%5d", ui32TotalTx[7]);
 
 		UARTprintf("\033[%d;%df",5,10);
 		UARTprintf("%5d    %5d", ui32TotalRx[2], ui32TotalFx[2]);
-		UARTprintf("\033[%d;%df",7,10);
+		UARTprintf("\033[%d;%df",8,10);
 		UARTprintf("%5d    %5d", ui32TotalRx[3], ui32TotalFx[3]);
-		UARTprintf("\033[%d;%df",9,10);
-		UARTprintf("%5d    %5d", ui32TotalRx[4], ui32TotalFx[4]);
 		UARTprintf("\033[%d;%df",11,10);
+		UARTprintf("%5d    %5d", ui32TotalRx[4], ui32TotalFx[4]);
+		UARTprintf("\033[%d;%df",14,10);
 		UARTprintf("%5d    %5d", ui32TotalRx[5], ui32TotalFx[5]);
-		UARTprintf("\033[%d;%df",13,10);
+		UARTprintf("\033[%d;%df",17,10);
 		UARTprintf("%5d    %5d", ui32TotalRx[7], ui32TotalFx[7]);
 		UARTprintf("\033[2;1f");	// Set cursor to R2C1
 
