@@ -34,11 +34,6 @@ uint32_t ui32TotalFx[8] = {0,0,0,0,0,0,0,0}; // Total number of messages Rx and 
 //*****************************************************************************
 // Flags
 //*****************************************************************************
-volatile bool g_bUART2RxFlag = 0;		// UART2 Rx Flag
-volatile bool g_bUART3RxFlag = 0;		// UART3 Rx Flag
-volatile bool g_bUART4RxFlag = 0;		// UART4 Rx Flag
-volatile bool g_bUART5RxFlag = 0;		// UART5 Rx Flag
-volatile bool g_bUART7RxFlag = 0;		// UART7 Rx Flag
 
 //*****************************************************************************
 // UART message objects that will hold the separate UART messages
@@ -47,48 +42,17 @@ tUARTMsgObject g_sUARTMsgObjectTx;
 tUARTMsgObject g_sUARTMsgObjectRx;
 
 //*****************************************************************************
-// Message buffers that hold the contents of the messages
+// Staging area wich holds the contents of the messages
 //*****************************************************************************
 uint8_t g_pui8UARTDataTx[8];
 uint8_t g_pui8UARTDataRx[8];
 
 //*****************************************************************************
-// The interrupt handler for the UART2 interrupt
+// message-buffer containers for UART messages
 //*****************************************************************************
-void DrawScreen(void)
-{
-	// Clear and reset home screen
-	UARTprintf("\033[2J"); // Clear everything
-
-	UARTprintf("\033[1;1f");
-	UARTprintf("Counterwound Labs, Inc.");
-
-	UARTprintf("\033[3;10f");	// Set cursor to R3C20
-	UARTprintf( "Tx/Rx");
-
-	UARTprintf("\033[3;20f");	// Set cursor to R3C20
-	UARTprintf( "Lost");
-
-	UARTprintf("\033[4;1f");	// Set cursor to R4C1
-	UARTprintf( "U2 Tx:\r\n");
-	UARTprintf( "   Rx:\r\n");
-
-	UARTprintf("\033[7;1f");	// Set cursor to R6C1
-	UARTprintf( "U3 Tx:\r\n");
-	UARTprintf( "   Rx:\r\n");
-
-	UARTprintf("\033[10;1f");	// Set cursor to R8C1
-	UARTprintf( "U4 Tx:\r\n");
-	UARTprintf( "   Rx:\r\n");
-
-	UARTprintf("\033[13;1f");	// Set cursor to R10C1
-	UARTprintf( "U5 Tx:\r\n");
-	UARTprintf( "   Rx:\r\n");
-
-	UARTprintf("\033[16;1f");	// Set cursor to R12C1
-	UARTprintf( "U7 Tx:\r\n");
-	UARTprintf( "   Rx:\r\n");
-}
+#define UART_MESSAGE_BUFFER_DEPTH 32
+tBufObject g_sUARTbuffer;
+tMsgObject g_sUARTmessage[UART_MESSAGE_BUFFER_DEPTH];
 
 //*****************************************************************************
 // Configure Interrupts
@@ -133,6 +97,19 @@ void ConfigureUART(void)
 }
 
 //*****************************************************************************
+// Parse and direct message to UART buffer
+//*****************************************************************************
+void handleUartMessage(tUARTMsgObject* uartMsgObject, size_t numUart)
+{
+	tMsgObject tmpMsgObject;
+	uint32_t extendID = (uint32_t) (uartMsgObject->ui16MsgID + 0x10000 * numUart);
+
+	// push incoming message into a tMsgObject so it can be added to the buffer
+	populateMsgObject(&tmpMsgObject, extendID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
+	pushMsgToBuf(&g_sUARTbuffer, tmpMsgObject);
+}
+
+//*****************************************************************************
 // Generic UART interrupt handler
 //*****************************************************************************
 void UARTIntHandler(uint32_t uartBase)
@@ -142,29 +119,23 @@ void UARTIntHandler(uint32_t uartBase)
     tUARTMsgObject* uartMsgObject = &g_sUARTMsgObjectRx;
     uint8_t* uartMsgBuf = g_pui8UARTDataRx;
     size_t numUart;
-    volatile bool* uartRxFlag;
 
     switch(uartBase)
     {
     case UART2_BASE:
     	numUart = 2;
-    	uartRxFlag = &g_bUART2RxFlag;
     	break;
     case UART3_BASE:
     	numUart = 3;
-    	uartRxFlag = &g_bUART3RxFlag;
     	break;
     case UART4_BASE:
     	numUart = 4;
-    	uartRxFlag = &g_bUART4RxFlag;
     	break;
     case UART5_BASE:
     	numUart = 5;
-    	uartRxFlag = &g_bUART5RxFlag;
     	break;
     case UART7_BASE:
     	numUart = 7;
-    	uartRxFlag = &g_bUART7RxFlag;
     	break;
     default:
     	break;
@@ -191,7 +162,7 @@ void UARTIntHandler(uint32_t uartBase)
     	{
     	case MSG_OBJ_NEW_DATA:
     		// Interrupt triggered with correct CRC
-    		*uartRxFlag = 1;
+    		handleUartMessage(uartMsgObject,numUart);
     		ui32TotalRx[numUart]++;
     		break;
     	case MSG_OBJ_DATA_LOST:
@@ -236,6 +207,14 @@ void UART7IntHandler(void)
 }
 
 //*****************************************************************************
+// Configure the buffers
+//*****************************************************************************
+void ConfigureBuffers(void)
+{
+	initMsgBuffer(&g_sUARTbuffer, g_sUARTmessage, UART_MESSAGE_BUFFER_DEPTH);
+}
+
+//*****************************************************************************
 // Configure the interrupts
 //*****************************************************************************
 void ConfigureInterrupts(void)
@@ -271,13 +250,12 @@ int main(void)
     // Initialize and setup the ports
     PortFunctionInit();
     ConfigureUART();
+    ConfigureBuffers();
     ConfigureInterrupts();
 
     // Initialize a message object to be used for receiving UART messages
 	g_sUARTMsgObjectRx.ui16MsgID = 0;
 	g_sUARTMsgObjectRx.ui32MsgLen = sizeof(g_pui8UARTDataTx);
-
-	DrawScreen();
 
 	while (1)
 	{
@@ -319,58 +297,6 @@ int main(void)
 		// Send UART 7 message
 		UARTMessageSet(UART7_BASE, &g_sUARTMsgObjectTx);
 		ui32TotalTx[7]++;
-
-		//*********************************************************************
-		// Rx messages
-		//*********************************************************************
-
-		if ( g_bUART2RxFlag )
-		{
-			g_bUART2RxFlag = 0;
-		}
-
-		if ( g_bUART3RxFlag )
-		{
-			g_bUART3RxFlag = 0;
-		}
-
-		if ( g_bUART4RxFlag )
-		{
-			g_bUART4RxFlag = 0;
-		}
-
-		if ( g_bUART5RxFlag )
-		{
-			g_bUART5RxFlag = 0;
-		}
-
-		if ( g_bUART7RxFlag )
-		{
-			g_bUART7RxFlag = 0;
-		}
-
-		UARTprintf("\033[%d;%df",4,10);
-		UARTprintf("%5d", ui32TotalTx[2]);
-		UARTprintf("\033[%d;%df",7,10);
-		UARTprintf("%5d", ui32TotalTx[3]);
-		UARTprintf("\033[%d;%df",10,10);
-		UARTprintf("%5d", ui32TotalTx[4]);
-		UARTprintf("\033[%d;%df",13,10);
-		UARTprintf("%5d", ui32TotalTx[5]);
-		UARTprintf("\033[%d;%df",16,10);
-		UARTprintf("%5d", ui32TotalTx[7]);
-
-		UARTprintf("\033[%d;%df",5,10);
-		UARTprintf("%5d    %5d", ui32TotalRx[2], ui32TotalFx[2]);
-		UARTprintf("\033[%d;%df",8,10);
-		UARTprintf("%5d    %5d", ui32TotalRx[3], ui32TotalFx[3]);
-		UARTprintf("\033[%d;%df",11,10);
-		UARTprintf("%5d    %5d", ui32TotalRx[4], ui32TotalFx[4]);
-		UARTprintf("\033[%d;%df",14,10);
-		UARTprintf("%5d    %5d", ui32TotalRx[5], ui32TotalFx[5]);
-		UARTprintf("\033[%d;%df",17,10);
-		UARTprintf("%5d    %5d", ui32TotalRx[7], ui32TotalFx[7]);
-		UARTprintf("\033[2;1f");	// Set cursor to R2C1
 
 		// Slow down the tests
 		SysCtlDelay(SysCtlClockGet()/3000);	// Delay 1 ms
