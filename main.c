@@ -102,12 +102,56 @@ void ConfigureUART(void)
 void handleUartMessage(tUARTMsgObject* uartMsgObject, size_t numUart)
 {
 	tMsgObject tmpMsgObject;
-	uint32_t extendID = (uint32_t) (uartMsgObject->ui16MsgID + 0x10000 * numUart);
+	uint32_t extendedID = (uint32_t) (uartMsgObject->ui16MsgID) + (0x10000 * numUart);
 
 	// push incoming message into a tMsgObject so it can be added to the buffer
-	populateMsgObject(&tmpMsgObject, extendID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
+	populateMsgObject(&tmpMsgObject, extendedID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
 	pushMsgToBuf(&g_sUARTbuffer, tmpMsgObject);
+
+	UARTprintf("\r\nTx UART: %d ID: %04x Data:",numUart,uartMsgObject->ui16MsgID );
+	uint64_t i;
+	for(i = 0; i < uartMsgObject->ui32MsgLen; i++)
+	{
+		UARTprintf(" %02x", uartMsgObject->pui8MsgData[i] );
+	}
 }
+
+//*****************************************************************************
+// Process the information in the UART Buffer
+//*****************************************************************************
+void processUARTBuffer(tBufObject* uartBufObject)
+{
+	uint32_t ui32Status;
+	tMsgObject tmpMsgObject;
+
+	while ( !isBufEmpty(uartBufObject) )
+	{
+		ui32Status = popMsgFromBuf(uartBufObject, &tmpMsgObject);
+
+		if ( ui32Status == BUF_OBJ_NO_FLAGS )
+		{
+			size_t numUart = (tmpMsgObject.ui32MsgID & 0xFF0000) >> 16;
+			uint16_t msgID = (uint16_t) (tmpMsgObject.ui32MsgID & 0xFFFF);
+			UARTprintf("\r\nRx UART: %d ID: %04x Data:",numUart, msgID );
+			uint64_t i;
+			for(i = 0; i < 8; i++)
+			{
+				UARTprintf(" %02x", tmpMsgObject.pui8MsgData[i] );
+			}
+		}
+
+		if ( (ui32Status & BUF_OBJ_EMPTY_POP) == BUF_OBJ_EMPTY_POP )
+		{
+			UARTprintf("\r\nPop Error, Empty Buffer" );
+		}
+
+		if ( (ui32Status & BUF_OBJ_DATA_LOST) == BUF_OBJ_DATA_LOST )
+		{
+			UARTprintf("\r\nPush Error, Data Lost" );
+		}
+	}
+}
+
 
 //*****************************************************************************
 // Generic UART interrupt handler
@@ -241,8 +285,7 @@ void ConfigureInterrupts(void)
 //*****************************************************************************
 // Main code starts here
 //*****************************************************************************
-int main(void)
-{
+int main(void){
 	// Set the clocking to run directly from the crystal.
     SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
                        SYSCTL_XTAL_16MHZ);
@@ -299,6 +342,8 @@ int main(void)
 		ui32TotalTx[7]++;
 
 		// Slow down the tests
-		SysCtlDelay(SysCtlClockGet()/3000);	// Delay 1 ms
+		SysCtlDelay(SysCtlClockGet()/30);	// Delay 100 ms
+
+		processUARTBuffer(&g_sUARTbuffer);
 	}
 }
