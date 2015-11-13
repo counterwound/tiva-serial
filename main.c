@@ -30,6 +30,7 @@
 uint32_t ui32TotalTx[8] = {0,0,0,0,0,0,0,0}; // Total number of messages Rx and failed
 uint32_t ui32TotalRx[8] = {0,0,0,0,0,0,0,0}; // Total number of messages Rx successfully
 uint32_t ui32TotalFx[8] = {0,0,0,0,0,0,0,0}; // Total number of messages Rx and failed
+uint8_t g_ui8Ticks = 0;
 
 //*****************************************************************************
 // Flags
@@ -105,7 +106,7 @@ void handleUartMessage(tUARTMsgObject* uartMsgObject, size_t numUart)
 	uint32_t extendedID = (uint32_t) (uartMsgObject->ui16MsgID) + (0x10000 * numUart);
 
 	// push incoming message into a tMsgObject so it can be added to the buffer
-	populateMsgObject(&tmpMsgObject, extendedID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
+	stageMsgObject(&tmpMsgObject, extendedID, uartMsgObject->pui8MsgData, uartMsgObject->ui32MsgLen);
 	pushMsgToBuf(&g_sUARTbuffer, tmpMsgObject);
 
 	UARTprintf("\r\nTx UART: %d ID: %04x Data:",numUart,uartMsgObject->ui16MsgID );
@@ -342,8 +343,14 @@ int main(void){
 		ui32TotalTx[7]++;
 
 		// Slow down the tests
-		SysCtlDelay(SysCtlClockGet()/30);	// Delay 100 ms
+		SysCtlDelay(SysCtlClockGet()/3);	// Delay 1000 ms
+		g_ui8Ticks++;
 
-		processUARTBuffer(&g_sUARTbuffer);
+		// Sets how many ticks go by before the buffer is checked.  If the number
+		// is set to large, then push errors should occur.
+		if ( 0 == (g_ui8Ticks % 16) )
+		{
+			processUARTBuffer(&g_sUARTbuffer);
+		}
 	}
 }
