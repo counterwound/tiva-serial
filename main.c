@@ -131,7 +131,7 @@ void processUARTBuffer(tBufObject* uartBufObject)
 
 		if ( ui32Status == BUF_OBJ_NO_FLAGS )
 		{
-			size_t numUart = (tmpMsgObject.ui32MsgID & 0xFF0000) >> 16;
+			uint8_t numUart = (uint8_t) ((tmpMsgObject.ui32MsgID & 0xFF0000) >> 16);
 			uint16_t msgID = (uint16_t) (tmpMsgObject.ui32MsgID & 0xFFFF);
 			UARTprintf("\r\nRx UART: %d ID: %04x Data:",numUart, msgID );
 			uint64_t i;
@@ -163,7 +163,7 @@ void UARTIntHandler(uint32_t uartBase)
 
     tUARTMsgObject* uartMsgObject = &g_sUARTMsgObjectRx;
     uint8_t* uartMsgBuf = g_pui8UARTDataRx;
-    size_t numUart;
+    uint8_t numUart;
 
     switch(uartBase)
     {
@@ -347,7 +347,7 @@ int main(void){
 		g_ui8Ticks++;
 
 		// Sets how many ticks go by before the buffer is checked.  If the number
-		// is set to large, then push errors should occur.
+		// is set too large, then push errors should occur.
 		if ( 0 == (g_ui8Ticks % 16) )
 		{
 			processUARTBuffer(&g_sUARTbuffer);
